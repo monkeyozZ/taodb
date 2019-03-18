@@ -15,7 +15,8 @@ import bus from '@/utils/eventBus'
 export default {
   data () {
     return {
-      list: []
+      list: [],
+      issueType: ''
     }
   },
   methods: {
@@ -24,6 +25,7 @@ export default {
         if (index === i) {
           if (!this.list[i].show) {
             this.list[i].show = true
+            this.statistics('常见问题', {问题: this.list[i].title, type: this.issueType})
           } else {
             this.list[i].show = false
           }
@@ -62,6 +64,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '认证审核'
           break
         case 'order':
           this.list = [
@@ -81,6 +84,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '抢单'
           break
         case 'recharge':
           this.list = [
@@ -105,6 +109,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '充值与退款'
           break
         case 'invite':
           this.list = [
@@ -114,6 +119,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '邀请奖励'
           break
         case 'integral':
           this.list = [
@@ -128,6 +134,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '积分'
           break
         case 'other':
           this.list = [
@@ -137,6 +144,7 @@ export default {
               show: false
             }
           ]
+          this.issueType = '其他'
           break
         default:
           this.list = []

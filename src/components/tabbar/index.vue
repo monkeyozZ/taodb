@@ -1,17 +1,17 @@
 <template>
   <div class="footer" :style="{bottom: bottom}">
     <tabbar>
-      <tabbar-item :selected="$route.path === '/'" link="/" v-waves>
+      <tabbar-item :selected="$route.path === '/'" link="/" v-waves @on-item-click="myStatisticsOrder">
         <img slot="icon" src="./img/order.png" v-if="$route.path !== '/'">
         <img slot="icon" src="./img/selectedOrder.png" v-if="$route.path === '/'">
           <span slot="label">抢单</span>
       </tabbar-item>
-      <tabbar-item :selected="$route.path === '/customer'" link="/customer" v-waves>
+      <tabbar-item :selected="$route.path === '/customer'" link="/customer" v-waves @on-item-click="myStatisticsCustomer">
         <img slot="icon" src="./img/customer.png" v-if="$route.path !== '/customer'">
         <img slot="icon" src="./img/selectedCustomer.png" v-if="$route.path === '/customer'">
         <span slot="label">客户</span>
       </tabbar-item>
-      <tabbar-item :selected="$route.path === '/own'" link="/own" v-waves>
+      <tabbar-item :selected="$route.path === '/own'" link="/own" v-waves @on-item-click="myStatisticsOwn">
         <img slot="icon" src="./img/own.png" v-if="$route.path !== '/own'">
         <img slot="icon" src="./img/selectedOwn.png" v-if="$route.path === '/own'">
         <span slot="label">我的</span>
@@ -45,6 +45,15 @@ export default {
       } else {
         this.bottom = 0
       }
+    },
+    myStatisticsOrder () {
+      this.statistics('查看抢单列表')
+    },
+    myStatisticsCustomer () {
+      this.statistics('查看我的客户')
+    },
+    myStatisticsOwn () {
+      this.statistics('查看我的')
     }
   },
   mounted () {

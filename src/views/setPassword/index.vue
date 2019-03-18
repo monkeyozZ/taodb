@@ -92,6 +92,7 @@ export default {
           return false
         } else {
           this.passErrorMsg = ''
+          this.statistics('设置密码', {from: '注册绑定'})
           return true
         }
       } else {
@@ -107,6 +108,7 @@ export default {
           this.inviteErrorMsg = '邀请码格式错误'
           return false
         } else {
+          this.statistics('输入邀请码', {from: '注册绑定'})
           return true
         }
       } else {

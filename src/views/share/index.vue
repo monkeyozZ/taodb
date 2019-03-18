@@ -15,7 +15,7 @@
             <svg-icon icon-class="Smobile"></svg-icon>
           </flexbox-item>
           <flexbox-item>
-            <input type="tel" placeholder="请输入手机号" v-model="form.mobile" maxlength="11">
+            <input type="tel" placeholder="请输入手机号" v-model="form.mobile" maxlength="11" @blur="statistics('输入手机号-分享/邀请', {})">
           </flexbox-item>
         </flexbox>
         <flexbox :gutter="0">
@@ -23,7 +23,7 @@
             <svg-icon icon-class="code"></svg-icon>
           </flexbox-item>
           <flexbox-item>
-            <input type="tel" placeholder="请输入验证码" v-model="form.code" maxlength="6">
+            <input type="tel" placeholder="请输入验证码" v-model="form.code" maxlength="6" @blur="statistics('输入短信验证码-分享/邀请', {})">
           </flexbox-item>
           <flexbox-item :span="4.16" class="button">
             <button type="button" :disabled="isdisable" :class="{resetbg: resetbg}" @click="showConfirm">{{code_text}}</button>
@@ -151,6 +151,7 @@ export default {
           vCode: this.pic_code
         }
         this.loading = true
+        this.statistics('图片验证码弹框点击确定-分享/邀请', {})
         shareApi.getMessageCode(obj).then((res) => {
           if (res.data.code === 0) {
             this.loading = false
@@ -171,6 +172,7 @@ export default {
             }, 1000)
           } else {
             this.verifyErrorMsg = res.data.msg
+            this.statistics('图片验证码错误-分享/邀请', {})
             return false
           }
         }).catch((err) => {
@@ -188,6 +190,7 @@ export default {
           verifyCode: this.form.code,
           inviteCode: this.inviteCode
         }
+        this.statistics('提交表单-分享/邀请', {})
         shareApi.checkMessageCode(obj).then((res) => {
           if (res.data.code === 0) {
             this.issuccess = true
@@ -222,6 +225,7 @@ export default {
       this.code_text = '获取验证码'
     },
     scrollTOBottom () {
+      this.statistics('输入图片验证码-分享/邀请', {})
       window.scrollTo(0, 0)
     }
   }

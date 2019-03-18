@@ -19,7 +19,7 @@
         </flexbox-item>
       </flexbox>
     </div>
-    <router-link to="/inviteDetails" class="inviteDetails">邀请明细 <svg-icon icon-class="right"></svg-icon> </router-link>
+    <router-link to="/inviteDetails" class="inviteDetails" @click.native="statistics('邀请有礼-邀请明细', {})">邀请明细 <svg-icon icon-class="right"></svg-icon> </router-link>
     <div class="step_box">
       <div class="step_title">
         <img src="./img/title.png" alt="">
@@ -163,9 +163,11 @@ export default {
     },
     closeRuleDialog () {
       this.rule = false
+      this.statistics('邀请有礼-关闭活动规则', {})
     },
     showRule () {
       this.rule = true
+      this.statistics('邀请有礼-查看活动规则', {})
       if (!this.hadInit) {
         this.$refs.scrollDialog.initScroll()
         this.hadInit = true
@@ -173,6 +175,7 @@ export default {
     },
     closeMask () {
       this.mask = false
+      this.statistics('邀请有礼-关闭邀请引导', {})
     },
     invite () {
       ownApi.getUserInfo().then((res) => { // 是否认证
@@ -183,6 +186,7 @@ export default {
           } else {
             this.mask = true
             this.initShare()
+            this.statistics('邀请有礼-邀请好友', {})
           }
         }
       }).catch((err) => {

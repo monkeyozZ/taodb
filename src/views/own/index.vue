@@ -53,10 +53,10 @@
     </div>
     <div class="own_list_box">
      <group class="box_item">
-        <cell title="实名认证" :value="certificationStatus" is-link class="auth" link="/certification" v-if="ownData.creditStatus === 'SUCCESS'">
+        <cell title="实名认证" :value="certificationStatus" is-link class="auth" link="/certification" v-if="ownData.creditStatus === 'SUCCESS'"  @click.native="statistics('点击实名认证', {type: '菜单', 认证状态: '已认证'})">
           <img slot="icon" src="./img/rz.png" class="icon">
         </cell>
-        <cell title="邀请有礼" :value="`邀请码${ownData.inviteCode?ownData.inviteCode:''}`" is-link class="auth" link="/invite">
+        <cell title="邀请有礼" :value="`邀请码${ownData.inviteCode?ownData.inviteCode:''}`" is-link class="auth" link="/invite" @click.native="statistics('点击邀请有礼', {})">
           <img slot="icon" src="./img/gift.png" class="icon">
         </cell>
         <!-- <cell title="消息" :value="unReadCount" is-link class="auth" link="/news">
@@ -65,10 +65,10 @@
             <span class="red_dot" :class="{active: ownData.unReadCount ? (ownData.unReadCount !== 0 ? true : false) : false}"></span>
           </div>
         </cell> -->
-        <cell title="联系客服" is-link link="/kefu">
+        <cell title="联系客服" is-link link="/kefu" @click.native="statistics('点击联系客服', {})">
            <img slot="icon" src="./img/kf.png" class="icon">
         </cell>
-        <cell title="常见问题"  is-link link="/faq">
+        <cell title="常见问题"  is-link link="/faq" @click.native="statistics('点击常见问题', {})">
           <img slot="icon" src="./img/wt.png" class="icon">
         </cell>
      </group>
@@ -345,6 +345,7 @@ export default {
             this.sign_count = res.data.data.list.length
             this.getUserInfo() // 同步积分数量
             this.getSignInStatus() // 同步签到状态
+            this.statistics('个人页面签到', {连签天: res.data.data.list.length})
             switch (res.data.data.list.length) {
               case 1:
                 this.status_1 = true
@@ -516,16 +517,20 @@ export default {
       this.getUserInfo()
     },
     goIntegral () {
+      this.statistics('点击查看积分', {})
       this.$router.push('/ownintegral')
     },
     goIntegral2 () {
+      this.statistics('点击查看积分', {})
       this.updateLeadStatus()
       this.$router.push('/ownintegral')
     },
     goRecharge () {
+      this.statistics('点击充值', {})
       this.$router.push('/recharge')
     },
     goRz () {
+      this.statistics('点击实名认证', {type: '签到区域', 认证状态: this.certificationStatus})
       this.$router.push('/certification')
     },
     getUserInfo () {
@@ -803,6 +808,7 @@ export default {
       let obj = {
         type: 'myInfoGuide'
       }
+      this.statistics('关闭积分引导', {})
       leadApi.updateLeadStatus(obj).then((res) => {
         if (res.data.code === 0) {
           this.lead = false

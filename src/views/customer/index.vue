@@ -161,7 +161,8 @@ export default {
       height: '',
       height2: '',
       changeTime: '',
-      remarkType: ''
+      remarkType: '',
+      remarkTypeText: ''
     }
   },
   computed: {
@@ -214,10 +215,12 @@ export default {
     },
     filterTime () {
       if (this.status === 'down') { // 倒序转正序
+        this.statistics('我的客户-抢单排序', {排序方向: '升序', type: this.customerType === 'OPTIMIZATION' ? '优选' : '淘单'})
         this.timeSort = 1
         this.getList()
         this.status = 'up'
       } else {
+        this.statistics('我的客户-抢单排序', {排序方向: '降序', type: this.customerType === 'OPTIMIZATION' ? '优选' : '淘单'})
         this.timeSort = -1
         this.getList()
         this.status = 'down'
@@ -360,6 +363,7 @@ export default {
       window.event.stopPropagation()
     },
     closeDialog () {
+      this.statistics('客户列表取消备注', {订单ID: this.orderId})
       this.showDialog = false
       this.tip = ''
     },
@@ -369,6 +373,7 @@ export default {
       })
       item.active = true
       this.remarkType = item.val
+      this.remarkTypeText = item.label
     },
     filterEmoji () {
       this.tip.replace(/\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]/g, '')
@@ -383,6 +388,7 @@ export default {
         remarkType: this.remarkType,
         remark: this.tip
       }
+      this.statistics('客户列表添加备注', {订单ID: this.orderId, 备注内容: {类型: this.remarkTypeText, 内容: this.tip}})
       customerApi.setTag(obj).then((res) => {
         if (res.data.code === 0) {
           this.getList()
@@ -429,9 +435,11 @@ export default {
     index: {
       handler () {
         if (this.index === 0) {
+          this.statistics('查看客户列表', {type: '优选'})
           this.customerType = 'OPTIMIZATION'
           this.getList()
         } else if (this.index === 1) {
+          this.statistics('查看客户列表', {type: '淘单'})
           this.customerType = 'ORDINARY'
           this.getList()
         }
@@ -440,6 +448,7 @@ export default {
     customerCondition: {
       handler () {
         this.getList()
+        this.statistics('我的客户筛选', {'type': this.customerType === 'OPTIMIZATION' ? '优选' : '淘单', 'options': this.customerCondition})
       }
     },
     tip: {

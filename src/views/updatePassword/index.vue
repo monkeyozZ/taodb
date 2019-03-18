@@ -120,6 +120,7 @@ export default {
               password: this.oldpass,
               newPassword: this.newpass
             }
+            this.statistics('提交修改密码', {})
             ownApi.updatePassword(obj).then((res) => {
               if (res.data.code === 0) {
                 this.$vux.toast.text('密码修改成功', 'top')

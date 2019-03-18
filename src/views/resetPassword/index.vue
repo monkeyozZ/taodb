@@ -79,6 +79,7 @@ export default {
           return false
         } else {
           this.passErrorMsg = ''
+          this.statistics('输入密码1-重置密码', {})
           return true
         }
       } else {
@@ -98,6 +99,7 @@ export default {
             return false
           } else {
             this.passErrorMsg2 = ''
+            this.statistics('输入密码2-重置密码', {})
             return true
           }
         }
@@ -146,6 +148,7 @@ export default {
           password: this.form.password
         }
         this.isdisable = true
+        this.statistics('提交表单-重置密码', {})
         ownApi.resetPassword(obj).then((res) => {
           if (res.data.code === 0) {
             this.$vux.toast.text(res.data.data, 'top')

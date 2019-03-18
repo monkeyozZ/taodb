@@ -74,6 +74,19 @@ service.interceptors.response.use((response) => {
       }, 2000)
     }
   }
+  if (response.data.code === -3) {
+    new Vue().$vux.confirm.show({
+      title: '通知',
+      content: '<p style="padding-bottom:10px;">系统维护中，暂时无法登陆<br>请联系在线客服！<p>',
+      showCancelButton: false,
+      showConfirmButton: false,
+      closeOnConfirm: false,
+      onConfirm () {
+        return false
+      }
+    })
+    throw new Error('账户被禁用')
+  }
   return response
 }, error => {
   new Vue().$vux.loading.hide() // 关闭loading

@@ -4,7 +4,7 @@
     <div class="recharge_title">
       <h1>请选择充值金额</h1>
       <p>
-        <router-link to="/financialdetails">
+        <router-link to="/financialdetails" @click.native="statistics('查看资金明细', {})">
           <svg-icon icon-class="financial"></svg-icon>
           资金明细
         </router-link>
@@ -131,6 +131,7 @@ export default {
                   let obj = {
                     total_fee: _this.money_num
                   }
+                  _this.statistics('确认支付', {payType: '微信', money: _this.money_num})
                   wechatPayApi.builtRecharge(obj).then((res) => {
                     // console.log(wx)
                     let prams = JSON.parse(res.data.data.json)
@@ -149,11 +150,13 @@ export default {
                           }
                           wechatPayApi.rechargeSuccess(obj).then((res2) => {
                             if (res2.data.code === 0) {
+                              _this.statistics('充值成功', {payType: '微信', money: _this.money_num})
                               Router.push('/paysuccess')
                             }
                           })
                           // Router.push('/paysuccess')
                         } else {
+                          _this.statistics('充值失败', {payType: '微信', money: _this.money_num})
                           Router.push('/payfail')
                         }
                       },

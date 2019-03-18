@@ -3,37 +3,37 @@
   <div class="item_box">
      <flexbox :gutter="0" wrap="wrap">
        <flexbox-item :span="4.5">
-         <router-link :to="{ path: '/issue/auth'}">
+         <router-link :to="{ path: '/issue/auth'}" @click.native="statistics('常见问题', {type: '认证审核'})">
            <svg-icon icon-class="rzsh"></svg-icon>
           <p>认证审核</p>
          </router-link>
        </flexbox-item>
        <flexbox-item :span="3">
-         <router-link :to="{ path: '/issue/order'}">
+         <router-link :to="{ path: '/issue/order'}" @click.native="statistics('常见问题', {type: '抢单'})">
           <svg-icon icon-class="qiangdan"></svg-icon>
           <p>抢单</p>
          </router-link>
        </flexbox-item>
        <flexbox-item :span="4.5">
-         <router-link :to="{ path: '/issue/recharge'}">
+         <router-link :to="{ path: '/issue/recharge'}" @click.native="statistics('常见问题', {type: '充值与退款'})">
           <svg-icon icon-class="chongzhi"></svg-icon>
           <p>充值与退款</p>
          </router-link>
        </flexbox-item>
        <flexbox-item :span="4.5">
-         <router-link :to="{ path: '/issue/invite'}">
+         <router-link :to="{ path: '/issue/invite'}" @click.native="statistics('常见问题', {type: '邀请奖励'})">
           <svg-icon icon-class="yaoqing"></svg-icon>
           <p>邀请奖励</p>
          </router-link>
        </flexbox-item>
        <flexbox-item :span="3">
-         <router-link :to="{ path: '/issue/integral'}">
+         <router-link :to="{ path: '/issue/integral'}" @click.native="statistics('常见问题', {type: '积分'})">
           <svg-icon icon-class="jf"></svg-icon>
           <p>积分</p>
          </router-link>
        </flexbox-item>
        <flexbox-item :span="4.5">
-         <router-link :to="{ path: '/issue/other'}">
+         <router-link :to="{ path: '/issue/other'}" @click.native="statistics('常见问题', {type: '其他'})">
           <svg-icon icon-class="other"></svg-icon>
           <p>其他</p>
          </router-link>

@@ -74,6 +74,7 @@ export default {
         }
       ],
       category: '',
+      categoryText: '',
       content: ''
     }
   },
@@ -84,6 +85,7 @@ export default {
       })
       item.active = true
       this.category = item.val
+      this.categoryText = item.label
     },
     submit () {
       if (this.category.length === 0) {
@@ -99,6 +101,7 @@ export default {
         type: this.category,
         content: this.content
       }
+      this.statistics('提交意见反馈', {反馈类型: this.categoryText, 反馈内容: this.content})
       this.$vux.loading.show({
         text: '加载中...'
       })

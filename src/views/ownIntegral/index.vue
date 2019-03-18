@@ -5,7 +5,7 @@
     <div class="integral_box">
       <div class="card_boy">
         <div class="integral_detail">
-          <router-link to="/integraldetails">
+          <router-link to="/integraldetails" @click.native="statistics('点击积分明细', {})">
             <svg-icon icon-class="jifen"></svg-icon>
             <p>积分明细 </p>
           </router-link>
@@ -96,6 +96,7 @@ export default {
   },
   methods: {
     closeMask () {
+      this.statistics('积分页面-每日分享-关闭', {})
       this.mask = false
     },
     getList () {
@@ -112,13 +113,16 @@ export default {
         // todo
         this.mask = true
         this.initShare()
+        this.statistics('积分页面-每日分享-分享', {})
       }
       if (type === '认证') {
         if (finishStatus) {
           if (!getStatus) {
             this.lingqu(id)
+            this.statistics('积分页面-新客认证-领取', {})
           }
         } else {
+          this.statistics('积分页面-新客认证-认证', {})
           this.$router.push('/certification')
         }
       }
@@ -126,16 +130,18 @@ export default {
         if (finishStatus) {
           if (!getStatus) {
             this.lingqu(id)
+            this.statistics('积分页面-首次充值-领取', {})
           }
         } else {
+          this.statistics('积分页面-首次充值-去充值', {})
           this.$router.push('/recharge')
         }
       }
       if (type === '签到') {
         if (finishStatus) {
           if (!getStatus) {
-            console.log(1)
             this.lingqu(id)
+            this.statistics('积分页面-签到21天-领取', {})
           }
         }
       }

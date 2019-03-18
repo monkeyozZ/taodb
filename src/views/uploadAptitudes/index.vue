@@ -144,6 +144,7 @@ export default {
         return false
       } else {
         this.setAptitudesImg(this.aptitudes)
+        this.statistics('上传资质证明-确定', {})
         this.$router.push('/certification')
       }
     }

@@ -179,6 +179,7 @@ export default {
         formdata.append('contrary', this.idCard.back)
         formdata.append('hand', this.idCard.hand) */
         this.setIdCardImg(this.idCard)
+        this.statistics('上传身份证-确定', {})
         this.$router.push('/certification')
       }
     }

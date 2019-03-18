@@ -639,6 +639,7 @@ export default {
       }
       orderPayApi.builtOrder(obj).then((res) => {
         if (res.data.code === 0) {
+          this.statistics('抢单列表-点击抢单', {type: this.customerCate === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: this.customerId})
           this.showConfirm2 = true // 抢单成功
         }
         if (res.data.code === -1) {
@@ -667,6 +668,7 @@ export default {
         if (this.login_status) {
           this.buildOrder()
         } else {
+          this.statistics('未关联手机号抢单-确定', {})
           this.$router.push({path: '/correlationMobile'})
         }
       } else {
@@ -678,39 +680,56 @@ export default {
       }
     },
     onConfirm2 () {
+      this.statistics('抢单成功-继续抢单', {type: this.customerCate === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: this.customerId})
       this.showConfirm2 = false
       this.getList()
     },
     onConfirm3 () {
+      if (this.confirmText3 === '您的淘单币不足，是否立即充值？') {
+        this.statistics('抢单淘单币不足-立即充值', {})
+      } else {
+        this.statistics('抢单积分不足-立即充值', {})
+      }
       this.$router.push('/recharge')
     },
     onConfirm4 () {
+      this.statistics('未认证抢单-去认证', {})
       this.$router.push('/certification')
     },
     onConfirm5 () {
+      this.statistics('抢单列表-订单已被抢', {})
       this.showConfirm5 = false
     },
     onCancel () {
       this.showConfirm = false
     },
     onCancel2 () {
+      this.statistics('抢单成功-立即查看', {type: this.customerCate === 'OPTIMIZATION' ? '优选' : '淘单'})
       this.$router.push({path: '/customer', query: { type: this.customerCate, time: new Date().getTime() }})
       this.getList()
     },
     onCancel3 () {
+      if (this.confirmText3 === '您的淘单币不足，是否立即充值？') {
+        this.statistics('抢单淘单币不足-取消', {})
+      } else {
+        this.statistics('抢单积分不足-取消', {})
+      }
       this.showConfirm3 = false
     },
     onCancel4 () {
+      this.statistics('未认证抢单-取消', {})
       this.showConfirm4 = false
       return false
     },
     onCancel5 () {
+      this.statistics('抢单列表-订单已被抢', {})
       this.showConfirm5 = false
     },
     buildSign () {
       bus.$emit('updateLeadStatus')
       signApi.sign().then((res) => {
         if (res.data.code === 0) {
+          this.statistics('抢单列表-签到', {})
           this.getSignInStatus() // 同步签到text（签到，已签到）
           this.sign_count = res.data.data.list.length
           switch (res.data.data.list.length) {
@@ -817,17 +836,21 @@ export default {
       }
     },
     closeDialog () {
+      this.statistics('抢单列表-签到-关闭', {})
       this.showQd = false
     },
     shareAgain () {
+      this.statistics('抢单列表-签到-再次分享', {})
       this.showShare = false
       this.mask = true
     },
     closeshowShare () {
+      this.statistics('抢单列表-签到-分享-关闭', {})
       this.showShare = false
       this.mask = false
     },
     share () {
+      this.statistics('抢单列表-签到-分享', {})
       this.showQd = false
       this.getUserInfo()
       this.initShare()
@@ -1087,12 +1110,15 @@ export default {
         this.sticky = false
         this.limitQuery.pageNumber = 1
         if (this.index === 0) {
+          this.statistics('查看抢单列表', {type: '全部可抢'})
           this.customerType = null
           this.getList()
         } else if (this.index === 1) {
+          this.statistics('查看抢单列表', {type: '优选'})
           this.customerType = 'OPTIMIZATION'
           this.getList()
         } else {
+          this.statistics('查看抢单列表', {type: '淘单'})
           this.customerType = 'ORDINARY'
           this.getList()
         }

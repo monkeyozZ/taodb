@@ -126,6 +126,7 @@ export default {
         pageSize: this.limitQuery.pageSize,
         pageNumber: this.limitQuery.pageNumber
       }
+      this.statistics('资金明细-加载更多', {pageNumber: this.limitQuery.pageNumber})
       ownApi.financialDetails(obj).then((res) => {
         if (res.data.code === 0) {
           res.data.data.elements.map((item) => {

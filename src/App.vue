@@ -80,6 +80,7 @@ export default {
       leadApi.updateLeadStatus(obj).then((res) => {
         if (res.data.code === 0) {
           this.lead = false
+          this.statistics('抢单列表-关闭签到引导', {})
         }
       })
     }

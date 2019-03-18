@@ -25,9 +25,11 @@ export default {
   },
   methods: {
     order () {
+      this.statistics('充值成功-去抢单', {})
       this.$router.push('/')
     },
     pay () {
+      this.statistics('充值成功-继续充值', {})
       this.$router.push('/recharge')
     }
   }

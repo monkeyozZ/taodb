@@ -12,11 +12,12 @@ import filters from '@/filters' // 过滤器
 import waves from '@/directive/waves' // 水波纹指令
 /* import '@/utils/vConsole.js' */
 import zhuge from '@/utils/zhuge.js'
-import { ToastPlugin, ConfigPlugin, LoadingPlugin, WechatPlugin } from 'vux'
+import { ToastPlugin, ConfigPlugin, LoadingPlugin, WechatPlugin, ConfirmPlugin } from 'vux'
 const FastClick = require('fastclick') // 移除移动端页面点击延迟
 FastClick.attach(document.body)
 Vue.use(ToastPlugin, { position: 'top' })
 Vue.use(LoadingPlugin)
+Vue.use(ConfirmPlugin)
 Vue.use(ConfigPlugin, {
   $layout: 'VIEW_BOX'
 })

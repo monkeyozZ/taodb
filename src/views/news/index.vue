@@ -119,6 +119,11 @@ export default {
       setAllReadyStatus: 'setAllReadyStatus'
     }),
     goDetails (id) {
+      if (this.index === 0) {
+        this.statistics('查看消息详情', {消息ID: id, type: '用户消息'})
+      } else {
+        this.statistics('查看消息详情', {消息ID: id, type: '系统消息'})
+      }
       this.$router.push({path: `/newsDetails/${id}`})
     },
     getList () {
@@ -212,6 +217,7 @@ export default {
       handler () {
         this.limitQuery.pageNumber = 1
         if (this.index === 0) {
+          this.statistics('查看用户消息', {})
           this.type = 'PERSONAL'
           this.setNewsType(this.type)
           let newsObj = {
@@ -221,6 +227,7 @@ export default {
           this.setAllReadyStatus(newsObj)
           this.getList()
         } else if (this.index === 1) {
+          this.statistics('查看系统消息', {})
           this.type = 'SYSTEM'
           this.setNewsType(this.type)
           let newsObj = {

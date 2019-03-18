@@ -31,7 +31,7 @@
       <div class="chargeback_reason">
         <h2 class="title">
           选择退单原因
-          <a href="javascript:;" @click="show = true"><svg-icon icon-class="reason"></svg-icon>退单说明</a>
+          <a href="javascript:;" @click="show = true;statistics('订单详情-查看订单说明', {订单ID: id})"><svg-icon icon-class="reason"></svg-icon>退单说明</a>
         </h2>
         <div class="chargeback_box">
           <div class="item_box">
@@ -256,6 +256,7 @@ export default {
           remark: this.tip,
           callRecordImg: this.screenshot
         }
+        this.statistics('提交退单申请', {订单ID: this.id})
         customerApi.chargeback(obj).then((res) => {
           if (res.data.code === 0) {
             this.getdata()

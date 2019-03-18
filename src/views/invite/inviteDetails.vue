@@ -159,6 +159,7 @@ export default {
         pageSize: this.limitQuery.pageSize,
         pageNumber: this.limitQuery.pageNumber
       }
+      this.statistics('邀请明细-加载更多', {pageNumber: this.limitQuery.pageNumber})
       shareApi.inviteStatisticsDetails(obj).then((res) => {
         if (res.data.code === 0) {
           if (res.data.data.elements.length !== 0) {

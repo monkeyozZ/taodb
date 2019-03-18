@@ -13,13 +13,13 @@
         <svg-icon icon-class="xia"></svg-icon>
       </div>
       <div class="news_box" slot="overwrite-left" v-if="$route.path === '/own'">
-        <router-link to="/news">
+        <router-link to="/news" @click.native="statistics('点击查看消息', {})">
           <img src="./img/news.png" class="icon">
           <span class="red_dot" :class="{active: ownData.unReadCount ? (ownData.unReadCount !== 0 ? true : false) : false}"></span>
         </router-link>
       </div>
       <a slot="right" href="javascript:;" :style="{color: rightText.color}" @click="handClick" v-if="$route.path !== '/own'">{{rightText.text}}</a>
-      <router-link to="/set" slot="right" v-else><img src="./img/set.png"></router-link>
+      <router-link to="/set" slot="right" @click.native="statistics('点击设置', {})" v-else><img src="./img/set.png"></router-link>
     </x-header>
   </div>
 </template>
@@ -101,6 +101,7 @@ export default {
         let obj = {
           type: this.newsType
         }
+        this.statistics('消息-全部已读', {})
         newsApi.allReady(obj).then((res) => {
           if (res.data.code === 0) {
             let newsObj = {

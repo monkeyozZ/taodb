@@ -345,6 +345,7 @@ export default {
     },
     goChargebackDetails (id) {
       if (this.customerDataDetails.type === 'OPTIMIZATION') { // 由于页面上退单按钮在淘单详情没有移除，只设置了disabled属性，防止懂技术的钻空子
+        this.statistics('订单详情-点击退单', {订单ID: id})
         this.$router.push(`/chargebackDetails/${id}`)
       }
     },

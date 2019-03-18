@@ -1,6 +1,6 @@
 <template>
   <div class="list_box">
-    <div class="list_item" v-for="(item, index) in orderData" :key="index" @click="Godetails(item.id)">
+    <div class="list_item" v-for="(item, index) in orderData" :key="index" @click="Godetails(item.id, item.type)">
       <div class="list_header">
         <flexbox :gutter="0" v-if="$route.path !== '/customer' && !item.meta">
           <flexbox-item>
@@ -180,39 +180,47 @@ export default {
     ...mapGetters(['login_status'])
   },
   methods: {
-    Godetails (id) {
+    Godetails (id, customerType) {
       let status = Auth.isAuthLogin() ? Auth.isAuthLogin() : 'false'
       if (JSON.parse(status)) {
         if (this.login_status) {
           let isOrder = this.$route.path
           if (isOrder !== '/customer') {
+            this.statistics('抢单-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/orderDetails/${id}`})
           } else {
+            this.statistics('客户列表-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/customerDetails/${id}`})
           }
         } else {
+          this.statistics('抢单-微信端查看客单详情-未关联手机号', {})
           this.$router.push({path: '/correlationMobile'})
         }
       } else {
         if (this.login_status) {
           let isOrder = this.$route.path
           if (isOrder !== '/customer') {
+            this.statistics('抢单-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/orderDetails/${id}`})
           } else {
+            this.statistics('客户列表-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/customerDetails/${id}`})
           }
         } else {
+          this.statistics('抢单-web端查看客单详情-未登录', {})
           this.$router.push({path: '/login'})
         }
       }
     },
     showDialog (id, remark, remarkType) {
       this.$emit('show', id, remark, remarkType)
+      this.statistics('客户列表打开备注', {订单ID: id})
     },
     order (type, price, id) {
       this.$emit('order', type, price, id)
     },
     call (id) {
+      this.statistics('客户列表拨打电话', {订单ID: id})
       this.$emit('call', id)
     },
     stop () {

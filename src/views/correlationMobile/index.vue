@@ -32,7 +32,7 @@
       title="请输入图形验证码"
       @on-confirm="onConfirm">
         <div class="pic_verify_box">
-          <input type="tel" maxlength="4" v-model="pic_code" ref="pic_verify" autofocus="autofocus" @focus="clearVerifyErrorMsg" @click="getFocus">
+          <input type="tel" maxlength="4" v-model="pic_code" ref="pic_verify" autofocus="autofocus" @focus="clearVerifyErrorMsg" @blur="statistics('输入图片验证码', {from: '注册绑定'})" @click="getFocus">
           <spinner v-if="loading" type="ripple" class="loading"></spinner>
           <img :src="codeUrl" alt="验证码" @click="changeVerifyCode">
         </div>
@@ -99,6 +99,7 @@ export default {
           return false
         } else {
           this.mobileErrorMsg = ''
+          this.statistics('输入手机号', {from: '注册绑定'})
           return true
         }
       } else {
@@ -113,6 +114,7 @@ export default {
           return false
         } else {
           this.codeErrorMsg = ''
+          this.statistics('输入短信验证码', {from: '注册绑定'})
           return true
         }
       } else {
@@ -148,6 +150,7 @@ export default {
         let obj = {
           mobile: this.form.mobile
         }
+        this.statistics('打开图片验证码弹窗', {from: '注册绑定'})
         registerAndLoginApi.getVerifyCode(obj).then((res) => {
           if (res.data.code === 0) {
             this.codeUrl = 'data:image/jpeg;base64,' + res.data.data
@@ -170,6 +173,7 @@ export default {
           vCode: this.pic_code
         }
         this.loading = true
+        this.statistics('提交图片验证码', {from: '注册绑定'})
         registerAndLoginApi.getMessageCode(obj).then((res) => {
           if (res.data.code === 0) {
             this.loading = false
@@ -190,6 +194,7 @@ export default {
               }
             }, 1000)
           } else {
+            this.statistics('图片验证码错误', {from: '注册绑定'})
             this.verifyErrorMsg = res.data.msg
             return false
           }
@@ -246,6 +251,7 @@ export default {
                   this.$router.push({path: '/'})
                 }
               } else {
+                this.statistics('短信验证码错误', {from: '注册绑定'})
                 this.codeErrorMsg = res.data.msg
               }
             }).catch((err) => {

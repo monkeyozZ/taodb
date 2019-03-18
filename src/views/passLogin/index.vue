@@ -84,6 +84,7 @@ export default {
           return false
         } else {
           this.mobileErrorMsg = ''
+          this.statistics('输入手机号码-密码登录', {})
           return true
         }
       } else {
@@ -99,6 +100,7 @@ export default {
           return false
         } else {
           this.passErrorMsg = ''
+          this.statistics('输入密码-密码登录', {})
           return true
         }
       } else {
@@ -129,6 +131,7 @@ export default {
           password: this.form.password
         }
         this.isdisable = true
+        this.statistics('提交表单-密码登录', {})
         registerAndLoginApi.loginByPass(obj).then((res) => {
           if (res.data.code === 0) {
             this.setJdbAuthToken(res.data.data)

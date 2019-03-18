@@ -237,6 +237,7 @@ export default {
       }
       orderPayApi.builtOrder(obj).then((res) => {
         if (res.data.code === 0) {
+          this.statistics('客户详情-点击抢单', {type: this.customerCate === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: this.customerId})
           this.showConfirm2 = true
         }
         if (res.data.code === -1) {
@@ -263,32 +264,48 @@ export default {
       this.buildOrder()
     },
     onConfirm2 () {
+      this.statistics('客单详情抢单成功-立即查看', {type: this.customerCate === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: this.customerId})
       this.showConfirm2 = false
       this.$router.push('/')
       bus.$emit('getList')
     },
     onConfirm3 () {
+      if (this.confirmText3 === '您的淘单币不足，是否立即充值？') {
+        this.statistics('抢单淘单币不足-立即充值', {})
+      } else {
+        this.statistics('抢单积分不足-立即充值', {})
+      }
       this.$router.push('/recharge')
     },
     onConfirm4 () {
+      this.statistics('客单详情抢单-未认证-去认证', {})
       this.$router.push('/certification')
     },
     onConfirm5 () {
+      this.statistics('客单详情抢单-订单已被抢', {})
       this.showConfirm5 = false
     },
     onCancel () {
       this.showConfirm = false
     },
     onCancel2 () {
+      this.statistics('客单详情抢单成功-取消', {})
       this.$router.push({path: '/customer', query: { type: this.customerCate, time: new Date().getTime() }})
     },
     onCancel3 () {
+      if (this.confirmText3 === '您的淘单币不足，是否立即充值？') {
+        this.statistics('抢单淘单币不足-取消', {})
+      } else {
+        this.statistics('抢单积分不足-取消', {})
+      }
       this.showConfirm3 = false
     },
     onCancel4 () {
+      this.statistics('客单详情抢单-未认证-取消', {})
       this.showConfirm4 = false
     },
     onCancel5 () {
+      this.statistics('客单详情抢单-订单已被抢', {})
       this.showConfirm5 = false
     }
   },
