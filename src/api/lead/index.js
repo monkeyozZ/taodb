@@ -5,15 +5,18 @@ import request from '@/utils/request'
  */
 const leadStatus = async (obj) => {
   return request({
-    url: '/user/setting/status',
+    url: '/guide/status',
     method: 'get',
     params: obj
   })
 }
 
+/**
+ * 修改用户是否需要引导的状态
+ */
 const updateLeadStatus = async (obj) => {
   return request({
-    url: '/user/setting/update',
+    url: '/guide/status/update',
     method: 'get',
     params: obj
   })

@@ -137,7 +137,7 @@
               <p v-if="item.remarkType">备注：<span>{{item.remarkType|transformRemark}}{{item.remark | substring20}}</span></p>
             </flexbox-item>
             <flexbox-item :span="4">
-              <svg-icon icon-class="beizhuActive" class="remarks" @click.native="showDialog(item.id, item.remark, item.remarkType)" v-if="item.status === 'NORMAL' && item.remarkType !== 'COMPLETE'"></svg-icon>
+              <svg-icon icon-class="beizhuActive" ref="beizhu" class="remarks" @click.native="showDialog(item.id, item.remark, item.remarkType)" v-if="item.status === 'NORMAL' && item.remarkType !== 'COMPLETE'"></svg-icon>
               <svg-icon icon-class="beizhu" class="remarks" @click.native="stop" v-else></svg-icon>
               <svg-icon icon-class="detailsMobileActive" class="comm" @click.native="call(item.id)" v-if="item.status !== 'UNDERWAY'"></svg-icon>
               <svg-icon icon-class="detailsMobile" class="remarks" @click.native="stop" v-else></svg-icon>
@@ -226,6 +226,9 @@ export default {
     stop () {
       this.$emit('stop')
     }
+  },
+  mounted () {
+    // console.log(this.$refs.beizhu.getBoundingClientRect().right)
   }
 }
 </script>

@@ -77,6 +77,14 @@
         <x-icon type="ios-close-outline" class="close" @click.native="closeDialog"></x-icon>
     </x-dialog>
   </div>
+  <div class="lead_mask" v-if="lead">
+    <img src="./img/remark.png" class="remarks" @click="showLeadRemarkDialog">
+    <div class="lead_box">
+      <img src="./img/lead.png">
+      <p>点击这里可以备注哦~</p>
+      <button type="button" class="close_lead_btn" @click="updateLeadStatus">关闭</button>
+    </div>
+  </div>
   </div>
 </template>
 
@@ -85,6 +93,7 @@ import { Flexbox, FlexboxItem, Tab, TabItem, Swiper, SwiperItem, XDialog, Transf
 import { mapGetters } from 'vuex'
 import ListCard from '@/components/listCard'
 import customerApi from '@/api/customer'
+import leadApi from '@/api/lead'
 // import bus from '@/utils/eventBus'
 export default {
   name: 'customer',
@@ -118,11 +127,11 @@ export default {
           val: 'COMPLETE',
           active: false
         },
-        {
+        /* {
           label: '空号',
           val: 'SPACENUMBER',
           active: false
-        },
+        }, */
         {
           label: '待跟进',
           val: 'FOLLOWUP',
@@ -162,7 +171,8 @@ export default {
       height2: '',
       changeTime: '',
       remarkType: '',
-      remarkTypeText: ''
+      remarkTypeText: '',
+      lead: false
     }
   },
   computed: {
@@ -247,6 +257,9 @@ export default {
         if (res.data.code === 0) {
           this.orderData = res.data.data.elements
           this.$vux.loading.hide()
+          if (this.orderData.length !== 0) {
+            this.getLeadStatus()
+          }
         }
       }).catch((err) => {
         console.log(err)
@@ -362,6 +375,10 @@ export default {
       this.showDialog = true
       window.event.stopPropagation()
     },
+    showLeadRemarkDialog () {
+      this.showDialog = true
+      this.updateLeadStatus() // 修改lead状态
+    },
     closeDialog () {
       this.statistics('客户列表取消备注', {订单ID: this.orderId})
       this.showDialog = false
@@ -412,6 +429,29 @@ export default {
         console.log(err)
       })
       window.event.stopPropagation()
+    },
+    getLeadStatus () {
+      let obj = {
+        type: 'REMARK'
+      }
+      leadApi.leadStatus(obj).then((res) => {
+        if (res.data.code === 0) {
+          if (!res.data.data) {
+            this.lead = true
+          }
+        }
+      })
+    },
+    updateLeadStatus () {
+      let obj = {
+        type: 'REMARK'
+      }
+      this.statistics('关闭备注引导', {})
+      leadApi.updateLeadStatus(obj).then((res) => {
+        if (res.data.code === 0) {
+          this.lead = false
+        }
+      })
     },
     stop () {
       window.event.stopPropagation()
@@ -469,6 +509,7 @@ export default {
   beforeRouteEnter (to, from, next) {
     next(vm => {
       // 通过 `vm` 访问组件实例
+      console.log(from.path)
       if (from.path === '/' || new RegExp('orderDetails').test(from.path)) {
         vm.selectedTab()
       }
@@ -479,7 +520,7 @@ export default {
   },
   mounted () {
     if (!this.type) {
-      this.getList()
+      // this.getList()
     }
     /* bus.$on('headerHeight', (h) => {
       this.headerHeight = h
@@ -705,5 +746,57 @@ export default {
   width: 40px;
   height: 40px;
   font-size: 40px;
+}
+
+.lead_mask{
+  position: fixed;
+  background: rgba(0,0,0,.7);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 998;
+  .remarks{
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      top: 253px;
+      right: 80px;
+      z-index: 999999;
+    }
+  .lead_box{
+    width: 64.53%;
+    position: absolute;
+    top: 260px;
+    right: 50px;
+    text-align: right;
+    img{
+      margin: 30px 82px 0 0;
+      display: inline-block;
+      width: 72px;
+    }
+    p{
+      font-size: 16px;
+      color:#fff;
+      letter-spacing:2px;
+      text-align: center;
+      font-weight:500;
+    }
+    .close_lead_btn{
+      display: block;
+      margin: 15px auto 0;
+      width: 75px;
+      line-height: 24px;
+      text-emphasis: center;
+      font-size: 16px;
+      letter-spacing: 2px;
+      border: 2px solid #FFFFFF;
+      box-shadow: 1px 1px 1px 0 #BEBEBE;
+      border-radius: 20px;
+      outline: none;
+      background: #1D93D2;
+      color: #fff;
+    }
+  }
 }
 </style>

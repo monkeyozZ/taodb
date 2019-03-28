@@ -12,7 +12,7 @@
       </div>
     </div>
   </div>
-  <div class="adv_box">
+  <div class="adv_box" v-if="false">
      <img src="@/assets/img/adv.png">
   </div>
 </scroll>

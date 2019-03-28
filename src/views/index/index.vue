@@ -25,23 +25,6 @@
                   @pullingDown="onPullingDown"
                   @pullingUp="onPullingUp"
                   @calcHeight="calcHeight">
-    <!-- <div class="tools">
-      <flexbox :gutter="0" justify="space-between">
-      <flexbox-item :span="4">
-        <div class="left" @click="setCurrentCity">
-          <svg-icon icon-class="address"></svg-icon>
-          <span v-if="city">{{city | substring4}}</span>
-          <span v-else>定位中<spinner type="dots" :size="'16px'"></spinner></span>
-        </div>
-      </flexbox-item>
-      <flexbox-item :span="2.8">
-        <div class="right" @click="qiandao">
-          <svg-icon icon-class="qiandao"></svg-icon>
-          <span>签到</span>
-        </div>
-      </flexbox-item>
-    </flexbox>
-    </div> -->
     <div class="banner">
       <my-swiper></my-swiper>
     </div>
@@ -56,30 +39,6 @@
         </div>
       </div>
     </div>
-
-   <!-- <slide ref="slide" :autoPlay="false" :loop="false" :showDot="false" :threshold="6" :speed="400" @sliderTo="sliderTo">
-      <div class="tab-swiper vux-center">
-        <list-card :orderData="orderData" @order="order" @stop="stop"></list-card>
-        <div class="empty_box" v-if="orderData.length === 0">
-          <svg-icon icon-class="empty" class="empty"></svg-icon>
-          <p>暂无订单</p>
-        </div>
-      </div>
-      <div class="tab-swiper vux-center">
-        <list-card :orderData="orderData" @order="order" @stop="stop"></list-card>
-        <div class="empty_box" v-if="orderData.length === 0">
-          <svg-icon icon-class="empty" class="empty"></svg-icon>
-          <p>暂无订单</p>
-        </div>
-      </div>
-      <div class="tab-swiper vux-center">
-        <list-card :orderData="orderData" @order="order" @stop="stop"></list-card>
-        <div class="empty_box" v-if="orderData.length === 0">
-          <svg-icon icon-class="empty" class="empty"></svg-icon>
-          <p>暂无订单</p>
-        </div>
-      </div>
-   </slide> -->
       <div class="tab-swiper">
         <list-card :orderData="orderData" @order="order" @stop="stop"></list-card>
         <div class="empty_box" v-if="orderData.length === 0">
@@ -88,23 +47,6 @@
           <p v-else>暂无订单</p>
         </div>
       </div>
-      <!-- <swiper v-model="index" :show-dots="false" :threshold="150" height="100%">
-        <swiper-item>
-          <div class="tab-swiper vux-center">
-            <list-card :orderData="orderData" @order="order"></list-card>
-          </div>
-        </swiper-item>
-        <swiper-item>
-          <div class="tab-swiper vux-center">
-            <list-card :orderData="orderData" @order="order"></list-card>
-          </div>
-        </swiper-item>
-        <swiper-item>
-          <div class="tab-swiper vux-center">
-            <list-card :orderData="orderData" @order="order"></list-card>
-          </div>
-        </swiper-item>
-      </swiper> -->
 <div v-transfer-dom>
   <x-dialog v-model="showQd" :dialog-style="{'max-width': '100%', width: '100%', height: '100%', 'background-color': 'transparent'}">
     <div class="flash_box">
@@ -226,7 +168,7 @@
       <div class="share_body">
         <div class="share_header">
           <img src="./img/success_header.png">
-          <div class=" close_qd">
+          <div class="close_qd">
            <x-icon type="ios-close-outline" class="close" @click.native="closeshowShare"></x-icon>
          </div>
         </div>

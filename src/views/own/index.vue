@@ -43,9 +43,10 @@
     <div class="upload_box" v-if="ownData.creditStatus !== 'SUCCESS'">
       <div class="rote_line" @click="goRz">
         <div class="content">
-          <div class="middle">
-            <img src="./img/re_2.png">
-            <p class="title">快速实名认证</p>
+          <div class="middle" :class="{refuse_res_box: ownData.creditStatus === 'REFUSE'}">
+            <img src="./img/re_2.png" v-if="ownData.creditStatus !== 'REFUSE'">
+            <p class="title" v-if="ownData.creditStatus !== 'REFUSE'">快速实名认证</p>
+            <p class="refuse_title" v-if="ownData.creditStatus === 'REFUSE'">认证未通过原因:</p>
             <p class="result">{{certificationStatus}}</p>
           </div>
         </div>
@@ -53,10 +54,13 @@
     </div>
     <div class="own_list_box">
      <group class="box_item">
-        <cell title="实名认证" :value="certificationStatus" is-link class="auth" link="/certification" v-if="ownData.creditStatus === 'SUCCESS'"  @click.native="statistics('点击实名认证', {type: '菜单', 认证状态: '已认证'})">
+        <cell title="实名认证" :value="certificationStatus" is-link link="/certification" v-if="ownData.creditStatus === 'SUCCESS'"  @click.native="statistics('点击实名认证', {type: '菜单', 认证状态: '已认证'})">
           <img slot="icon" src="./img/rz.png" class="icon">
         </cell>
-        <cell title="邀请有礼" :value="`邀请码${ownData.inviteCode?ownData.inviteCode:''}`" is-link class="auth" link="/invite" @click.native="statistics('点击邀请有礼', {})">
+        <cell title="每日抢券" value="每日十点开抢" is-link link="/coupon" @click.native="statistics('点击每日抢券', {})">
+          <img slot="icon" src="./img/coupon.png" class="icon">
+        </cell>
+        <cell title="邀请有礼" :value="`邀请码${ownData.inviteCode?ownData.inviteCode:''}`" is-link link="/invite" @click.native="statistics('点击邀请有礼', {})">
           <img slot="icon" src="./img/gift.png" class="icon">
         </cell>
         <!-- <cell title="消息" :value="unReadCount" is-link class="auth" link="/news">
@@ -530,8 +534,10 @@ export default {
       this.$router.push('/recharge')
     },
     goRz () {
-      this.statistics('点击实名认证', {type: '签到区域', 认证状态: this.certificationStatus})
-      this.$router.push('/certification')
+      if (this.ownData.creditStatus !== 'REFUSE') {
+        this.statistics('点击实名认证', {type: '签到区域', 认证状态: this.certificationStatus})
+        this.$router.push('/certification')
+      }
     },
     getUserInfo () {
       ownApi.getUserInfo().then((res) => {
@@ -550,6 +556,9 @@ export default {
           }
           if (res.data.data.creditStatus === 'FAIL') {
             this.certificationStatus = '认证失败'
+          }
+          if (res.data.data.creditStatus === 'REFUSE') {
+            this.certificationStatus = res.data.data.refuseReason
           }
         }
       }).catch((err) => {
@@ -794,11 +803,11 @@ export default {
     },
     getLeadStatus () {
       let obj = {
-        type: 'myInfoGuide'
+        type: 'MYINFO'
       }
       leadApi.leadStatus(obj).then((res) => {
         if (res.data.code === 0) {
-          if (res.data.data) {
+          if (!res.data.data) {
             this.lead = true
           }
         }
@@ -806,7 +815,7 @@ export default {
     },
     updateLeadStatus () {
       let obj = {
-        type: 'myInfoGuide'
+        type: 'MYINFO'
       }
       this.statistics('关闭积分引导', {})
       leadApi.updateLeadStatus(obj).then((res) => {
@@ -1056,6 +1065,10 @@ export default {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
+          &.refuse_res_box{
+            width: 80%;
+            text-align: center;
+          }
           img{
             float: left;
             margin-right: 15px;

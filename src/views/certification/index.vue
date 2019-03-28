@@ -4,13 +4,13 @@
      <group label-width="4.5em" label-margin-right="2em" label-align="center">
        <x-input title="姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名" placeholder="请输入真实姓名" text-align="right" placeholder-align="right" v-model="form.name" ref="name" :disabled="nameDisabled" @on-blur="scrollTOBottom"></x-input>
        <x-input title="身份证号" placeholder="请输入身份证号" placeholder-align="right" text-align="right" v-model="form.idCard" type="text" :max="18" @on-blur="validateIdCard" :disabled="idcardDisabled"></x-input>
-       <x-input title="机构名称" placeholder="请输入机构名称" placeholder-align="right" text-align="right" v-model="form.orgName" :disabled="orgNameDisabled" @on-blur="scrollTOBottom2"></x-input>
+       <x-input title="公司全称" placeholder="请输入与营业执照一致的全称" @click.native="searchCompany" :readonly="true" placeholder-align="right" text-align="right" v-model="form.orgName" :disabled="orgNameDisabled" @on-blur="scrollTOBottom2"></x-input>
        <popup-picker title="公司类型" @on-hide="cancel" :data="list" v-model="form.category" value-text-align="right" :disabled="categoryDisabled" @on-change="statistics('认证-输入公司类型', {})"></popup-picker>
      </group>
      <h2 class="title">上传证明</h2>
      <group label-width="4.5em" label-margin-right="2em" label-align="center">
-      <cell title="身份证" is-link class="auth" link="/uploadidcard" :value="isUpload1"></cell>
-      <cell title="资质证明" is-link class="auth" link="/uploadaptitudes" :value="isUpload2"></cell>
+      <cell title="身份证" is-link link="/uploadidcard" :value="isUpload1"></cell>
+      <cell title="资质证明" is-link link="/uploadaptitudes" :value="isUpload2"></cell>
      </group>
      <p class="tip">
        <span>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { Group, XInput, PopupPicker, Cell, Confirm, XDialog, TransferDomDirective as TransferDom } from 'vux'
+import { Group, XInput, PopupPicker, Cell, Confirm, XDialog, Search, TransferDomDirective as TransferDom } from 'vux'
 import { mapGetters, mapActions } from 'vuex'
 import ownApi from '@/api/own'
 import userCreditApi from '@/api/userCredit'
@@ -62,7 +62,8 @@ export default {
     PopupPicker,
     Cell,
     Confirm,
-    XDialog
+    XDialog,
+    Search
   },
   data () {
     return {
@@ -198,13 +199,13 @@ export default {
       }
 
       if (this.form.orgName.length === 0) {
-        this.$vux.toast.text('请输入机构名称', 'top')
+        this.$vux.toast.text('请输入公司全称', 'top')
         return false
       } else {
         let reg = /[~'!@#￥$%^&*-+_=:]/
         let res = reg.test(this.form.orgName)
         if (res) {
-          this.$vux.toast.text('请输入正确的机构名称', 'top')
+          this.$vux.toast.text('请输入正确的公司全称', 'top')
           return false
         }
       }
@@ -332,7 +333,10 @@ export default {
     },
     scrollTOBottom2 () {
       window.scrollTo(0, 0)
-      this.statistics('认证-输入机构名称', {})
+      this.statistics('认证-输入公司全称', {})
+    },
+    searchCompany () {
+      this.$router.push('/company')
     }
   },
   beforeRouteLeave (to, from, next) {
@@ -354,6 +358,9 @@ export default {
         if (vm.aptitudes !== null) {
           vm.isUpload2 = '已选择'
         }
+      }
+      if (from.path === '/company') {
+        vm.form.orgName = vm.$route.query.company
       }
       // 通过 `vm` 访问组件实例
     })

@@ -152,6 +152,17 @@ const router = new Router({
       ]
     },
     {
+      path: '/company',
+      component: layout,
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/company/index'),
+          meta: { title: '公司名称' }
+        }
+      ]
+    },
+    {
       path: '/uploadidcard',
       component: layout,
       children: [
@@ -261,6 +272,16 @@ const router = new Router({
           meta: { title: '消息' }
         }
       ]
+    },
+    {
+      path: '/coupon',
+      component: () => import('@/views/coupon/index'),
+      meta: { title: '领券中心' }
+    },
+    {
+      path: '/ownCoupon',
+      component: () => import('@/views/ownCoupon/index'),
+      meta: { title: '我的优惠券' }
     },
     {
       path: '/invite',

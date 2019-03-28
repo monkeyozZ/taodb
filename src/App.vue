@@ -62,11 +62,11 @@ export default {
     getLeadStatus () {
       if (this.login_status) {
         let obj = {
-          type: 'regGuide'
+          type: 'REGISTER'
         }
         leadApi.leadStatus(obj).then((res) => {
           if (res.data.code === 0) {
-            if (res.data.data) {
+            if (!res.data.data) {
               this.lead = true
             }
           }
@@ -75,7 +75,7 @@ export default {
     },
     updateLeadStatus () {
       let obj = {
-        type: 'regGuide'
+        type: 'REGISTER'
       }
       leadApi.updateLeadStatus(obj).then((res) => {
         if (res.data.code === 0) {

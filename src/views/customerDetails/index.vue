@@ -172,11 +172,11 @@ export default {
           val: 'COMPLETE',
           active: false
         },
-        {
+        /* {
           label: '空号',
           val: 'SPACENUMBER',
           active: false
-        },
+        }, */
         {
           label: '待跟进',
           val: 'FOLLOWUP',

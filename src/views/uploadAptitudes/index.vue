@@ -25,7 +25,7 @@
             <input type="file" id="file2" accept="image/*" @change="handleFileChange2" :disabled="isdisabled" ref="file2">
           </label>
         </div>
-        <p>公司logo墙合照</p>
+        <p>本人与公司logo墙合照</p>
       </flexbox-item>
 
       <flexbox-item :span="6" class="upload_example">
