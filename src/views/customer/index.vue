@@ -8,9 +8,9 @@
         <tab :line-width=5 active-color='#1F7CF0' :custom-bar-width="'32px'" v-model="index" :scroll-threshold="5">
             <tab-item class="vux-center" :selected="selected === item" v-for="(item, index) in list" @click="selected = item" :key="index">{{item}}</tab-item>
         </tab>
-        <div class="filter" @click="routeTo">
+        <!-- <div class="filter" @click="routeTo">
           <p>筛选<svg-icon icon-class="filter"></svg-icon></p>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -27,7 +27,7 @@
                   <div class="empty_box" v-if="orderData.length === 0">
                     <svg-icon icon-class="empty" class="empty"></svg-icon>
                     <p>暂无客户！</p>
-                    <button class="order_btn" @click="goOrder" v-if="Object.keys(customerCondition).length === 0">去抢单</button>
+                    <button class="order_btn" @click="goOrder">去抢单</button>
                   </div>
                 <list-card :orderData="orderData" @show="show" @call="call" @stop="stop"></list-card>
             </scroll>
@@ -45,7 +45,7 @@
                   <div class="empty_box" v-if="orderData.length === 0">
                     <svg-icon icon-class="empty" class="empty"></svg-icon>
                     <p>暂无客户！</p>
-                    <button class="order_btn" @click="goOrder" v-if="Object.keys(customerCondition).length === 0">去抢单</button>
+                    <button class="order_btn" @click="goOrder">去抢单</button>
                   </div>
                 <list-card :orderData="orderData" @show="show" @call="call" @stop="stop"></list-card>
             </scroll>
@@ -90,7 +90,6 @@
 
 <script>
 import { Flexbox, FlexboxItem, Tab, TabItem, Swiper, SwiperItem, XDialog, TransferDomDirective as TransferDom } from 'vux'
-import { mapGetters } from 'vuex'
 import ListCard from '@/components/listCard'
 import customerApi from '@/api/customer'
 import leadApi from '@/api/lead'
@@ -195,7 +194,6 @@ export default {
         txt: {more: this.pullUpLoadMoreTxt, noMore: this.pullUpLoadNoMoreTxt}
       } : false
     },
-    ...mapGetters(['customerCondition']),
     headerHeight () {
       return localStorage.getItem('headerHeight') ? localStorage.getItem('headerHeight') : ''
     },
@@ -236,16 +234,9 @@ export default {
         this.status = 'down'
       }
     },
-    copy (obj) {
-      let newobj = {}
-      for (let attr in obj) {
-        newobj[attr] = obj[attr]
-      }
-      return newobj
-    },
     getList () {
       this.limitQuery.pageNumber = 1
-      let obj = this.copy(this.customerCondition)
+      let obj = {}
       obj.customerType = this.customerType
       obj.pageSize = this.limitQuery.pageSize
       obj.pageNumber = this.limitQuery.pageNumber
@@ -267,7 +258,7 @@ export default {
     },
     onPullingDown1 () { // 下拉刷新
       this.limitQuery.pageNumber = 1
-      let obj = this.copy(this.customerCondition)
+      let obj = {}
       obj.customerType = this.customerType
       obj.pageSize = this.limitQuery.pageSize
       obj.pageNumber = this.limitQuery.pageNumber
@@ -287,7 +278,7 @@ export default {
     },
     onPullingDown2 () { // 下拉刷新
       this.limitQuery.pageNumber = 1
-      let obj = this.copy(this.customerCondition)
+      let obj = {}
       obj.customerType = this.customerType
       obj.pageSize = this.limitQuery.pageSize
       obj.pageNumber = this.limitQuery.pageNumber
@@ -308,7 +299,7 @@ export default {
     onPullingUp1 () { // 上拉加载
       // 更新数据
       this.limitQuery.pageNumber += 1
-      let obj = this.copy(this.customerCondition)
+      let obj = {}
       obj.customerType = this.customerType
       obj.pageSize = this.limitQuery.pageSize
       obj.pageNumber = this.limitQuery.pageNumber
@@ -333,7 +324,7 @@ export default {
     onPullingUp2 () { // 上拉加载
       // 更新数据
       this.limitQuery.pageNumber += 1
-      let obj = this.copy(this.customerCondition)
+      let obj = {}
       obj.customerType = this.customerType
       obj.pageSize = this.limitQuery.pageSize
       obj.pageNumber = this.limitQuery.pageNumber
@@ -485,12 +476,6 @@ export default {
         }
       }
     },
-    customerCondition: {
-      handler () {
-        this.getList()
-        this.statistics('我的客户筛选', {'type': this.customerType === 'OPTIMIZATION' ? '优选' : '淘单', 'options': this.customerCondition})
-      }
-    },
     tip: {
       handler () {
         this.text_num = this.tip.length
@@ -509,11 +494,16 @@ export default {
   beforeRouteEnter (to, from, next) {
     next(vm => {
       // 通过 `vm` 访问组件实例
-      console.log(from.path)
-      if (from.path === '/' || new RegExp('orderDetails').test(from.path)) {
+      if ((from.path === '/' || new RegExp('orderDetails').test(from.path)) && vm.type !== undefined) {
         vm.selectedTab()
       }
-      if (new RegExp('customerDetails').test(from.path)) {
+      if ((from.path === '/' || from.path === '/own' || new RegExp('orderDetails').test(from.path)) && vm.type === undefined) {
+        vm.getList()
+      }
+      /* if (from.path === '/' || new RegExp('orderDetails').test(from.path)) {
+        vm.selectedTab()
+      } */
+      if (new RegExp('customerDetails').test(from.path) || new RegExp('historyOrders').test(from.path)) {
         vm.getList()
       }
     })
@@ -554,12 +544,12 @@ export default {
     }
     .tab_nav_box{
       position: relative;
-      width: 86%;
+      width: 100%;
       padding-left: 16px;
       box-sizing: border-box;
       .vux-tab-wrap{
-        width: 45%;
-        margin: 0 auto;
+        width: 70%;
+        margin-left: 105px;
         .vux-tab-item{
           background: #fff;
           height: 44px;

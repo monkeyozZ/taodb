@@ -6,12 +6,12 @@
       :listen-scroll="listenScroll"
       :probe-type="probeType"
       :click="true"
-      :bounce="{top: false}">
+      :bounce="{top: false, bottom: false}">
         <div class="current_city_box">
           <h2 class="title">当前城市</h2>
           <flexbox :gutter="0" wrap="wrap">
             <flexbox-item :span="4" class="current_city">
-                <svg-icon icon-class="address"></svg-icon>
+                <svg-icon icon-class="cityIcon"></svg-icon>
                 <span v-if="currentCity">{{currentCity}}</span>
                 <span v-else>定位中<spinner type="dots" :size="'16px'"></spinner></span>
             </flexbox-item>
@@ -68,11 +68,12 @@
 
 <script>
 import { Flexbox, FlexboxItem, Spinner } from 'vux'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import groupcity from '@/../static/city.json'
 import bus from '@/utils/eventBus'
 import axios from 'axios'
 import { getData } from '@/utils/dom'
+import Auth from '@/utils/auth'
 const ANCHOR_HEIGHT = window.innerHeight <= 480 ? 17 : 18
 export default {
   name: 'city',
@@ -115,7 +116,10 @@ export default {
         }
       }
       return list
-    }
+    },
+    ...mapGetters({
+      city: 'city'
+    })
   },
   methods: {
     ...mapActions({
@@ -129,13 +133,24 @@ export default {
       }).then((res) => {
         if (res.status === 200) {
           this.currentCity = res.data.name
-          this.selected = [res.data.name]
+          let FilterItem = Auth.getFilterItem()
+          let cityArr = FilterItem.citys.split(',')
+          // this.selected = this.city
+          if (this.city.length !== 0) {
+            this.selected = this.city.slice(0)
+          } else {
+            if (cityArr.length !== 0) {
+              this.selected = cityArr
+            } else {
+              this.selected = [res.data.name]
+            }
+          }
         } else {
           this.currentCity = '上海'
           this.selected = ['上海']
         }
       }).catch((err) => {
-        this.city = '上海'
+        this.currentCity = '上海'
         this.selected = ['上海']
         console.log(err)
       })
@@ -248,14 +263,14 @@ export default {
   width: 100%;
   height: 100%;
   .wrapper{
-    height: calc(100vh - 47px);
+    height: calc(100vh - 44px);
   }
   .title{
     font-size: 14px;
     line-height: 18px;
     color: #999;
     font-weight: normal;
-    margin: 8px 0;
+    padding: 8px 0;
   }
   .current_city_box{
     padding: 0 15px;

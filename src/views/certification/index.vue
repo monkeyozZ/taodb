@@ -4,7 +4,7 @@
      <group label-width="4.5em" label-margin-right="2em" label-align="center">
        <x-input title="姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名" placeholder="请输入真实姓名" text-align="right" placeholder-align="right" v-model="form.name" ref="name" :disabled="nameDisabled" @on-blur="scrollTOBottom"></x-input>
        <x-input title="身份证号" placeholder="请输入身份证号" placeholder-align="right" text-align="right" v-model="form.idCard" type="text" :max="18" @on-blur="validateIdCard" :disabled="idcardDisabled"></x-input>
-       <x-input title="公司全称" placeholder="请输入与营业执照一致的全称" @click.native="searchCompany" :readonly="true" placeholder-align="right" text-align="right" v-model="form.orgName" :disabled="orgNameDisabled" @on-blur="scrollTOBottom2"></x-input>
+       <x-input title="公司全称" placeholder="请输入与营业执照一致的全称" @click.native="searchCompany" :readonly="true" placeholder-align="right" text-align="right" v-model="form.orgName" :disabled="orgNameDisabled" @on-blur="validateCompany"></x-input>
        <popup-picker title="公司类型" @on-hide="cancel" :data="list" v-model="form.category" value-text-align="right" :disabled="categoryDisabled" @on-change="statistics('认证-输入公司类型', {})"></popup-picker>
      </group>
      <h2 class="title">上传证明</h2>
@@ -51,6 +51,7 @@ import ownApi from '@/api/own'
 import userCreditApi from '@/api/userCredit'
 // import axios from 'axios'
 import Auth from '@/utils/auth'
+// import CompanyNameApi from '@/api/company'
 export default {
   name: 'certification',
   directives: {
@@ -87,14 +88,15 @@ export default {
       isUpload1: '未选择',
       isUpload2: '未选择',
       docmHeight: document.documentElement.clientHeight, // 默认屏幕高度
-      resizeHeight: ''
+      resizeHeight: '',
+      // companyStatus: false,
+      companyErrorMsg: ''
     }
   },
   computed: {
     ...mapGetters({
       idCard: 'idCard',
-      aptitudes: 'aptitudes',
-      token: 'token'
+      aptitudes: 'aptitudes'
     })
   },
   methods: {
@@ -110,6 +112,7 @@ export default {
           this.form.name = res.data.data.realName
           this.form.idCard = res.data.data.idCard
           this.form.orgName = res.data.data.institution
+          // this.companyStatus = true // 再次提交的时候，公司名称验证可以通过
           this.form.category = new Array(res.data.data.institutionType)
           if (res.data.data.result === 'UNDERWAY') {
             this.isdisabled = true
@@ -208,6 +211,29 @@ export default {
           this.$vux.toast.text('请输入正确的公司全称', 'top')
           return false
         }
+        /* if (this.companyStatus) {
+          let reg = /[~'!@#￥$%^&*-+_=:]/
+          let res = reg.test(this.form.orgName)
+          console.log(this.form.orgName)
+          if (res) {
+            this.$vux.toast.text('请输入正确的公司全称', 'top')
+            return false
+          }
+        } else {
+          if (this.companyErrorMsg === 'tax') {
+            this.$vux.toast.text('该公司当前欠税，无法认证', 'middle')
+          }
+          if (this.companyErrorMsg === 'dishonest') {
+            this.$vux.toast.text('该公司当前失信，无法认证', 'middle')
+          }
+          if (this.companyErrorMsg === 'enforcement') {
+            this.$vux.toast.text('该公司当前为被执行人，无法认证', 'middle')
+          }
+          if (this.companyErrorMsg === 'unusual') {
+            this.$vux.toast.text('该公司经营异常，无法认证', 'middle')
+          }
+          return false
+        } */
       }
 
       if (this.form.category.length === 0) {
@@ -242,6 +268,9 @@ export default {
         userCreditApi.certification(obj).then((res) => {
           if (res.data.code === 0) {
             this.show = true
+          }
+          if (res.data.code === -1) {
+            this.$vux.toast.text(res.data.msg, 'middle')
           }
           if (res.data.code === -2) {
             this.setLoginstatus(false)
@@ -331,12 +360,14 @@ export default {
       window.scrollTo(0, 0)
       this.statistics('认证-输入姓名', {})
     },
-    scrollTOBottom2 () {
-      window.scrollTo(0, 0)
+    validateCompany () {
+      window.scrollTo(0, 0) // 解决键盘弹起页面卡住不下来bug
       this.statistics('认证-输入公司全称', {})
     },
     searchCompany () {
-      this.$router.push('/company')
+      if (!this.orgNameDisabled) {
+        this.$router.push('/company')
+      }
     }
   },
   beforeRouteLeave (to, from, next) {
@@ -362,6 +393,33 @@ export default {
       if (from.path === '/company') {
         vm.form.orgName = vm.$route.query.company
       }
+      /* if (from.path === '/company') {
+        vm.form.orgName = vm.$route.query.company
+        let obj = {
+          key: vm.$route.query.company
+        }
+        CompanyNameApi.validateCompany(obj).then((res) => {
+          if (res.data.code === -1) {
+            vm.companyErrorMsg = res.data.msg
+            if (res.data.msg === 'tax') {
+              vm.$vux.toast.text('该公司当前欠税，无法认证', 'middle')
+            }
+            if (res.data.msg === 'dishonest') {
+              vm.$vux.toast.text('该公司当前失信，无法认证', 'middle')
+            }
+            if (res.data.msg === 'enforcement') {
+              vm.$vux.toast.text('该公司当前为被执行人，无法认证', 'middle')
+            }
+            if (res.data.msg === 'unusual') {
+              vm.$vux.toast.text('该公司经营异常，无法认证', 'middle')
+            }
+            vm.companyStatus = false
+          }
+          if (res.data.code === 0) {
+            vm.companyStatus = true
+          }
+        })
+      } */
       // 通过 `vm` 访问组件实例
     })
   },

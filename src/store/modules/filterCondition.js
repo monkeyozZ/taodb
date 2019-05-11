@@ -1,21 +1,16 @@
 import * as types from '../mutation-type'
 
 const state = {
-  orderCondition: {},
-  customerCondition: {}
+  orderCondition: {}
 }
 
 const getters = {
-  orderCondition: () => state.orderCondition,
-  customerCondition: () => state.customerCondition
+  orderCondition: () => state.orderCondition
 }
 
 const mutations = {
   [types.SETORDERCONDITION] (state, params) {
     state.orderCondition = params
-  },
-  [types.SETCUSTOMERCONDITION] (state, params) {
-    state.customerCondition = params
   }
 }
 

@@ -9,5 +9,24 @@ const getFilterList = async (obj) => {
     method: 'get'
   })
 }
+/**
+ * 存储筛选条件
+ */
+const setFilterList = async (obj) => {
+  return request({
+    url: '/user/queryTerm/save',
+    method: 'post',
+    data: obj
+  })
+}
+/**
+ * 获取存储的筛选条件
+ */
+const getSomeFilterList = async () => {
+  return request({
+    url: '/user/queryTerm',
+    method: 'get'
+  })
+}
 
-export default { getFilterList }
+export default { getFilterList, setFilterList, getSomeFilterList }

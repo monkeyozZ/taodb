@@ -92,9 +92,6 @@ export default {
         console.log(err)
       })
     }
-  },
-  mounted () {
-    this.$refs.search.setFocus()
   }
 }
 </script>

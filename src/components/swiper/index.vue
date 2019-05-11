@@ -13,8 +13,13 @@
           <a :href="bannerArr[1].link">
             <img :src="bannerArr[1].imgSrc?baseUrl + bannerArr[1].imgSrc: ''">
           </a>
-        </swiper-slide> -->
-        Optional controls
+        </swiper-slide>
+        <swiper-slide>
+          <a :href="bannerArr[2].link">
+            <img :src="bannerArr[2].imgSrc?baseUrl + bannerArr[2].imgSrc: ''">
+            <img src="./img/go.png" class="go heartBeat">
+          </a>
+        </swiper-slide>
         <div class="swiper-pagination"  slot="pagination"></div>
       </swiper>
   </div>
@@ -35,7 +40,7 @@ export default {
   data () {
     return {
       baseUrl: process.env.BASE_API + '/resource/',
-      bannerArr: [{imgSrc: '', link: ''}, {imgSrc: '', link: ''}],
+      bannerArr: [{imgSrc: '', link: ''}, {imgSrc: '', link: ''}, {imgSrc: '', link: ''}],
       swiperOption: {
         autoplay: true,
         slidesPerView: 'auto',
@@ -73,6 +78,71 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@-webkit-keyframes heartBeat {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    14% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3)
+    }
+
+    28% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    42% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3)
+    }
+
+    70% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+}
+
+@keyframes heartBeat {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    14% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3)
+    }
+
+    28% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+
+    42% {
+        -webkit-transform: scale(1.3);
+        transform: scale(1.3)
+    }
+
+    70% {
+        -webkit-transform: scale(1);
+        transform: scale(1)
+    }
+}
+
+.heartBeat {
+    -webkit-animation-duration: 1.3s;
+    -webkit-animation-name: heartBeat;
+    -webkit-animation-timing-function: ease-in-out;
+    animation-duration: 1.3s;
+    animation-name: heartBeat;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    animation-iteration-count: infinite;
+}
 .swiper-container{
   .swiper-slide{
     img{
@@ -80,6 +150,14 @@ export default {
       max-width: 100%;
       width: 100%;
       height: auto;
+    }
+    .go{
+      display: inline-block;
+      width: 31px;
+      height: 31px;
+      position: absolute;
+      top: 52%;
+      right: 24%;
     }
   }
 }

@@ -137,9 +137,12 @@ export default {
     this.pullDownInitTop = -46
   },
   mounted () {
-    setTimeout(() => {
+    /* setTimeout(() => {
       this.initScroll()
-    }, 30)
+    }, 30) */
+    this.$nextTick(() => {
+      this.initScroll()
+    })
   },
   methods: {
     initScroll () {
@@ -154,6 +157,7 @@ export default {
       if (this.$refs.listWrapper) {
         setTimeout(() => {
           this.$refs.listWrapper.style.minHeight = `${getRect(this.$refs.wrapper).height}px`
+          console.log(getRect(this.$refs.wrapper).height)
         }, 40)
       }
       let options = {

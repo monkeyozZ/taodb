@@ -12,7 +12,7 @@
         </div>
         <div class="integral_num">
           <p>积分</p>
-          <p>{{ownIntegral}}<span>30积分可抢一个淘单</span></p>
+          <p>{{ownIntegral}}</p>
         </div>
       </div>
       <div class="card_bottom"><img src="./img/bottom.png"></div>

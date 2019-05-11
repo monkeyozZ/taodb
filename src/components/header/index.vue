@@ -18,8 +18,9 @@
           <span class="red_dot" :class="{active: ownData.unReadCount ? (ownData.unReadCount !== 0 ? true : false) : false}"></span>
         </router-link>
       </div>
-      <a slot="right" href="javascript:;" :style="{color: rightText.color}" @click="handClick" v-if="$route.path !== '/own'">{{rightText.text}}</a>
-      <router-link to="/set" slot="right" @click.native="statistics('点击设置', {})" v-else><img src="./img/set.png"></router-link>
+      <a slot="right" href="javascript:;" :style="{color: rightText.color}" @click="handClick" v-if="$route.path === '/news' || $route.path === '/city'">{{rightText.text}}</a>
+      <router-link to="/set" slot="right" @click.native="statistics('点击设置', {})" v-if="$route.path === '/own'"><img src="./img/set.png"></router-link>
+      <router-link to="/historyOrders" slot="right" class="history" @click.native="statistics('点击历史定订单', {})" v-if="$route.path === '/customer'">历史订单</router-link>
     </x-header>
   </div>
 </template>
@@ -62,15 +63,6 @@ export default {
       }
     },
     GoBack () {
-      if (this.$route.path === '/city') {
-        this.setCity([])
-        history.back(-1)
-        return false
-      }
-      if (this.$route.path === '/filter') {
-        bus.$emit('back')
-        return false
-      }
       if (this.$route.path === '/certification') {
         document.activeElement.blur() // 部分安卓手机在键盘未关闭时返回导致页面高度变小
         setTimeout(() => {

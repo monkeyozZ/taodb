@@ -76,5 +76,14 @@ const getRegisterStatus = async (obj) => {
     params: obj
   })
 }
+/**
+ * 验证token是否失效
+ */
+const checkToken = () => {
+  return request({
+    url: '/sys/checkToken',
+    method: 'get'
+  })
+}
 
-export default { getVerifyCode, getMessageCode, checkMessageCode, register, loginByPass, getUserInfo, getRegisterStatus }
+export default { getVerifyCode, getMessageCode, checkMessageCode, register, loginByPass, getUserInfo, getRegisterStatus, checkToken }

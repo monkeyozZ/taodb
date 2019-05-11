@@ -114,6 +114,13 @@
           </div>
         <x-icon type="ios-close-outline" class="close_btn" @click.native="closeRuleDialog"></x-icon>
       </x-dialog>
+      <confirm v-model="showConfirm2"
+        confirm-text="确定"
+        :show-cancel-button="false"
+        @on-confirm="onConfirm2"
+        class="indexConfirm">
+          <p>{{confirmText2}}</p>
+      </confirm>
       <button class="invite_friend" @click="invite">邀请好友</button>
       <div class="mask" v-if="mask" @click="closeMask">
         <img src="./img/lead.png" alt="">
@@ -124,7 +131,7 @@
 </template>
 
 <script>
-import { Flexbox, FlexboxItem, XDialog, Spinner, TransferDomDirective as TransferDom } from 'vux'
+import { Flexbox, FlexboxItem, XDialog, Spinner, Confirm, TransferDomDirective as TransferDom } from 'vux'
 import ownApi from '@/api/own'
 import wechatApi from '@/api/wechatPay'
 import shareApi from '@/api/share'
@@ -134,7 +141,8 @@ export default {
     Flexbox,
     FlexboxItem,
     XDialog,
-    Spinner
+    Spinner,
+    Confirm
   },
   directives: {
     TransferDom
@@ -150,7 +158,9 @@ export default {
       ownData: {},
       integralCount: '',
       coinCount: '',
-      inviteCount: ''
+      inviteCount: '',
+      showConfirm2: false,
+      confirmText2: ''
     }
   },
   methods: {
@@ -177,12 +187,20 @@ export default {
       this.mask = false
       this.statistics('邀请有礼-关闭邀请引导', {})
     },
+    onConfirm2 () {
+      this.showConfirm2 = false
+    },
     invite () {
       ownApi.getUserInfo().then((res) => { // 是否认证
         if (res.data.code === 0) {
           this.ownData = res.data.data
           if (res.data.data.creditStatus !== 'SUCCESS') {
-            this.certification = true
+            if (res.data.data.creditStatus === 'REFUSE') {
+              this.confirmText2 = res.data.data.refuseReason
+              this.showConfirm2 = true
+            } else {
+              this.certification = true
+            }
           } else {
             this.mask = true
             this.initShare()

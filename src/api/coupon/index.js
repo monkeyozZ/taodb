@@ -38,7 +38,7 @@ const myCoupon = async (obj) => {
  */
 const unUsedCoupon = async (obj) => {
   return request({
-    url: '/coupon/unUsed',
+    url: `/coupon/unUsed?${(new Date()).getTime()}`,
     method: 'get',
     params: obj
   })

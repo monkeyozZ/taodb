@@ -2,12 +2,14 @@ import * as types from '../mutation-type'
 
 const state = {
   city: [],
-  currentCity: ''
+  currentCity: '',
+  sendOrdersCity: '' // 派单城市
 }
 
 const getters = {
   city: () => state.city,
-  currentCity: () => state.currentCity
+  currentCity: () => state.currentCity,
+  sendOrdersCity: () => state.sendOrdersCity
 }
 
 const mutations = {
@@ -16,6 +18,9 @@ const mutations = {
   },
   [types.CURRENTCITY] (state, params) {
     state.currentCity = params
+  },
+  [types.SENDORDERSCITY] (state, params) {
+    state.sendOrdersCity = params
   }
 }
 

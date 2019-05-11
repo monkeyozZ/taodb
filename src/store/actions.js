@@ -32,11 +32,11 @@ export const setCity = ({ commit }, obj) => {
 export const setCurrentCity = ({ commit }, obj) => {
   commit(types.CURRENTCITY, obj)
 }
+export const setSendOrdersCity = ({ commit }, obj) => {
+  commit(types.SENDORDERSCITY, obj)
+}
 export const setOrderCondition = ({ commit }, obj) => {
   commit(types.SETORDERCONDITION, obj)
-}
-export const setCustomerCondition = ({ commit }, obj) => {
-  commit(types.SETCUSTOMERCONDITION, obj)
 }
 export const setAllReadyStatus = ({ commit }, obj) => {
   commit(types.SETALLREADY, obj)

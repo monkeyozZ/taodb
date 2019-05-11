@@ -130,10 +130,18 @@
         class="indexConfirm">
           <p class="confirmText">该订单已被抢</p>
       </confirm>
+      <confirm v-model="showConfirm6"
+        confirm-text="确定"
+        :show-cancel-button="false"
+        @on-confirm="onConfirm6"
+        class="indexConfirm">
+          <p>{{confirmText6}}</p>
+      </confirm>
     </div>
   </scroll>
   <div class="button_box" ref="button_box">
-    <button class="button" :disabled="orderData.status === 'SOLD'" @click="order(orderData.type, orderData.discountPrice, orderData.id)">{{orderData.status === 'SOLD'?'已被抢' : '立即抢单'}}</button>
+    <button class="button" :disabled="orderData.status === 'SOLD'" @click="order(orderData.type, orderData.discountPrice, orderData.id)" v-if="orderData.type === 'OPTIMIZATION'">{{orderData.status === 'SOLD'?'已被抢' : '立即抢单'}}</button>
+    <button class="button" :disabled="orderData.status === 'SOLD'" @click="order(orderData.type, orderData.price, orderData.id)" v-else>{{orderData.status === 'SOLD'?'已被抢' : '立即抢单'}}</button>
   </div>
 </div>
 </template>
@@ -161,8 +169,10 @@ export default {
       showConfirm3: false,
       showConfirm4: false,
       showConfirm5: false,
+      showConfirm6: false,
       confirmText: '',
       confirmText3: '',
+      confirmText6: '',
       orderData: {},
       customerId: '',
       customerCate: '',
@@ -198,7 +208,12 @@ export default {
       ownApi.getUserInfo().then((res) => { // 是否认证
         if (res.data.code === 0) {
           if (res.data.data.creditStatus !== 'SUCCESS') {
-            this.showConfirm4 = true
+            if (res.data.data.creditStatus === 'REFUSE') {
+              this.confirmText6 = res.data.data.refuseReason
+              this.showConfirm6 = true
+            } else {
+              this.showConfirm4 = true
+            }
           } else {
             let obj = {
               customerId: this.customerId
@@ -284,6 +299,10 @@ export default {
     onConfirm5 () {
       this.statistics('客单详情抢单-订单已被抢', {})
       this.showConfirm5 = false
+    },
+    onConfirm6 () {
+      this.statistics('客单详情抢单-拒绝认证弹框-确认', {})
+      this.showConfirm6 = false
     },
     onCancel () {
       this.showConfirm = false

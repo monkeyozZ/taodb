@@ -11,11 +11,12 @@
       </p>
     </div>
      <div class="money_box">
+       <spinner type="lines" size="40px" class="spinner" v-if="showSpinner"></spinner>
        <flexbox :gutter="0" wrap="wrap">
          <flexbox-item :span="1/3" v-for="(item, index) in list_arr_top" :key="index" @click.native="selecte(item)">
            <div class="money_item" :class="{active: item.active == true}">
              <p>{{item.money}}元</p>
-             <p>赠送{{item.integral}}积分</p>
+             <p>{{item.integral}}</p>
            </div>
          </flexbox-item>
        </flexbox>
@@ -24,7 +25,7 @@
       <cell :is-link="true" @click.native="pickcoupon">
         <p slot="title" class="pay_num">本次支付：<span>{{selectedCoupon ? afterDiscount : money_num}}</span>元</p>
         <p slot="default" class="coupon_num" v-if="selectedCoupon">已使用<span>{{coupomNum}}</span>元优惠券</p>
-        <p slot="default" class="coupon_num" v-else>选择优惠券</p>
+        <p slot="default" class="coupon_num" :class="{disable: isHaveCoupon}" v-else>选择优惠券</p>
       </cell>
     </group>
      <!-- <div class="pay_box">
@@ -32,13 +33,13 @@
      </div> -->
      <h1 class="pay_title">选择支付方式</h1>
      <div class="pay_way">
-       <label class="check_box" for="wechat">
+       <label class="check_box">
          <svg-icon icon-class="wechat" class="wechat"></svg-icon>
          <span class="check_title">微信支付</span>
          <input type="radio" id="wechat" value="wxpay" v-model="payWay">
          <i class="weui-icon weui_icon_circle weui-icon-circle"></i>
        </label>
-       <label class="check_box" for="shortcut">
+       <label class="check_box">
          <img src="./img/shortcut.png" class="shortcut">
          <span class="check_title">快捷支付</span>
           <input type="radio" id="shortcut" value="shortcut" v-model="payWay">
@@ -61,60 +62,41 @@
       class="indexConfirm">
         <p class="confirmText">您当前未认证，请认证后<br>再来充值吧！</p>
     </confirm>
+    <confirm v-model="showConfirm2"
+    confirm-text="确定"
+    :show-cancel-button="false"
+    @on-confirm="onConfirm2"
+    class="indexConfirm">
+      <p>{{confirmText2}}</p>
+  </confirm>
     <popup v-model="showCouponList">
       <div class="CouponBox">
         <svg-icon icon-class="close" class="coupon_close" @click.native="closeCouponList"></svg-icon>
           <h1 class="coupon_title">选择优惠券</h1>
-            <div class="coupon_list">
-              <div class="empty_box" v-if="ownCouponList.length === 0">
-                <img src="./img/empty.png">
-                <p>这里好冷清，毛都没有</p>
+            <scroll class="coupon_wrapper" ref="scrollDialog"  scrollbar="true">
+              <div class="coupon_list">
+                <div class="empty_box" v-if="ownCouponList.length === 0">
+                  <img src="./img/empty.png">
+                  <p>这里好冷清，毛都没有</p>
+                </div>
+                <ul>
+                  <li v-for="(item, index) in ownCouponList" :key="index" v-show="money_num >= item.cashStandard">
+                      <div class="left">
+                        <h1>{{item.cashBack}}<span>元</span></h1>
+                        <p>{{item.title}}</p>
+                      </div>
+                      <div class="right">
+                        <h2>满{{item.cashStandard}}元使用</h2>
+                        <p :class="isUrgency(item.longEndTime)? 'urgency' : ''">{{item.longEndTime | transformDate}}到期</p>
+                      </div>
+                      <div class="grab_btn">
+                        <input type="radio" :value="item.id" v-model="usedCouponId" :checked="item.id === usedCouponId" :disabled="money_num < item.cashStandard">
+                        <i class="weui-icon weui_icon_circle weui-icon-circle"></i>
+                      </div>
+                  </li>
+                </ul>
               </div>
-              <ul>
-                <li v-for="(item, index) in ownCouponList" :key="index">
-                    <div class="left">
-                      <h1>{{item.cashBack}}<span>元</span></h1>
-                      <p>{{item.title}}</p>
-                    </div>
-                    <div class="right">
-                      <h2>满{{item.cashStandard}}元使用</h2>
-                      <p>{{item.longEndTime | transformDate}}到期</p>
-                    </div>
-                    <div class="grab_btn">
-                      <input type="radio" :value="item.id" v-model="usedCouponId" :checked="item.id === usedCouponId" :disabled="money_num < item.cashStandard">
-                      <i class="weui-icon weui_icon_circle weui-icon-circle"></i>
-                    </div>
-                </li>
-                <!-- <li>
-                  <div class="left">
-                    <h1>20<span>元</span></h1>
-                    <p>充值满减劵</p>
-                  </div>
-                  <div class="right">
-                    <h2>满200000元使用</h2>
-                    <p>2019-3-15 22:00:53到期</p>
-                  </div>
-                  <div class="grab_btn">
-                    <input type="radio" :value="2" v-model="coupon_limit">
-                    <i class="weui-icon weui_icon_circle weui-icon-circle"></i>
-                  </div>
-                </li>
-                <li>
-                  <div class="left">
-                    <h1>20<span>元</span></h1>
-                    <p>充值满减劵</p>
-                  </div>
-                  <div class="right">
-                    <h2>满200000元使用</h2>
-                    <p>2019-3-15 22:00:53到期</p>
-                  </div>
-                  <div class="grab_btn">
-                    <input type="radio" :value="3" v-model="coupon_limit">
-                    <i class="weui-icon weui_icon_circle weui-icon-circle"></i>
-                  </div>
-                </li> -->
-              </ul>
-            </div>
+            </scroll>
             <button class="confirm_btn" @click="confireCoupon">确认</button>
         </div>
     </popup>
@@ -123,7 +105,8 @@
 </template>
 
 <script>
-import {Flexbox, FlexboxItem, Checklist, Confirm, Group, Cell, Popup, CheckIcon, TransferDomDirective as TransferDom} from 'vux'
+import {Flexbox, FlexboxItem, Checklist, Confirm, Group, Cell, Popup, CheckIcon, Spinner, TransferDomDirective as TransferDom} from 'vux'
+import rechargeApi from '@/api/recharge'
 import wechatPayApi from '@/api/wechatPay'
 import lianlianPayApi from '@/api/lianlianPay'
 import ownApi from '@/api/own'
@@ -137,7 +120,8 @@ export default {
     Group,
     Cell,
     Popup,
-    CheckIcon
+    CheckIcon,
+    Spinner
   },
   directives: {
     TransferDom
@@ -145,24 +129,32 @@ export default {
   data () {
     return {
       list_arr_top: [
-        {money: 500, integral: 100, active: false},
-        {money: 1000, integral: 300, active: true},
+        /* {money: 500, integral: 100, active: false},
+        {money: 1000, integral: 300, active: false},
         {money: 1500, integral: 600, active: false},
         {money: 2000, integral: 1000, active: false},
         {money: 3000, integral: 2000, active: false},
-        {money: 5000, integral: 4000, active: false}
+        {money: 5000, integral: 4000, active: false} */
       ],
-      money_num: 1000,
+      money_num: 0,
       afterDiscount: '',
       payWay: 'wxpay',
       showConfirm: false,
+      showConfirm2: false,
+      confirmText2: '',
       showCouponList: false,
       usedCouponId: '',
       ownCouponList: [],
       coupomNum: '',
       minRechargeMoney: '',
-      selectedCoupon: false
+      selectedCoupon: false,
+      isHaveCoupon: true,
+      assignCouponId: null,
+      showSpinner: false
     }
+  },
+  created () {
+    this.assignCouponId = this.couponId
   },
   computed: {
     couponId () {
@@ -174,28 +166,97 @@ export default {
     }
   },
   methods: {
+    getRechargeConfig () {
+      this.showSpinner = true
+      rechargeApi.getRechargeConfig().then((res) => {
+        this.showSpinner = false
+        if (res.data.code === 0) {
+          let moneyConfigArr = []
+          res.data.data.map((item) => {
+            moneyConfigArr.push({money: item.money, integral: item.remark, active: false})
+          })
+          this.list_arr_top = moneyConfigArr
+          if (!this.couponId) {
+            this.getList()
+          }
+        }
+      })
+    },
     selecte (item) {
       this.list_arr_top.forEach(function (item) {
         item.active = false
       })
       item.active = true
       this.money_num = item.money
-      // this.selectedCoupon = false //
     },
     onCancel () {
-      this.showConfirm4 = false
+      this.showConfirm = false
       return false
     },
     onConfirm () {
       this.$router.push('/certification')
     },
+    onConfirm2 () {
+      this.showConfirm2 = false
+    },
     pickcoupon () {
-      this.showCouponList = true
+      if (!this.isHaveCoupon) {
+        this.showCouponList = true
+        this.$refs.scrollDialog.destroy()
+        setTimeout(() => {
+          this.$refs.scrollDialog.initScroll()
+        }, 60)
+      }/*  else {
+        this.$vux.toast.text('暂无优惠券！', 'top')
+      } */
+    },
+    isUrgency (endTime) {
+      let timeNum = (endTime - (new Date()).getTime()) / 1000
+      return timeNum <= (86400 * 2)
     },
     getList () {
       couponApi.unUsedCoupon().then((res) => {
         if (res.data.code === 0) {
           this.ownCouponList = res.data.data
+          console.log(this.ownCouponList)
+          if (this.ownCouponList.length !== 0) {
+            let arr = []
+            this.ownCouponList.map((i) => {
+              if (i.cashStandard <= 1000) {
+                arr.push(i)
+              }
+            })
+            if (arr.length !== 0) {
+              arr.sort(function (a, b) {
+                return a.longStartTime - b.longStartTime
+              })
+              let maxFaceValueArr = []
+              arr.map((j) => {
+                maxFaceValueArr.push(j.cashBack)
+              })
+              let maxFaceValue = Math.max.apply(null, maxFaceValueArr)
+              arr.some((k) => {
+                if (maxFaceValue === k.cashBack) {
+                  this.usedCouponId = k.id
+                  return true
+                }
+              })
+
+              this.list_arr_top[1].active = true
+              this.money_num = this.list_arr_top[1].money
+              this.selectedCoupon = true
+            } else {
+              this.list_arr_top[1].active = true
+              this.money_num = this.list_arr_top[1].money
+              this.selectedCoupon = false
+              this.isHaveCoupon = true // 说明没有对应档位的优惠券，让选择优惠券disabled
+            }
+          } else {
+            this.list_arr_top[1].active = true
+            this.money_num = this.list_arr_top[1].money
+            this.selectedCoupon = false
+            this.isHaveCoupon = true // 说明没有对应档位的优惠券，让选择优惠券disabled
+          }
         }
       })
     },
@@ -204,29 +265,66 @@ export default {
         couponApi.unUsedCoupon().then((res) => {
           if (res.data.code === 0) {
             this.ownCouponList = res.data.data
+            let idIsMatch = false // lainlian支付页面返回，当id匹配不到时，走默认的优惠券匹配规则
             this.ownCouponList.map((item) => {
               if (item.id === this.couponId) {
                 this.usedCouponId = this.couponId
+                this.isHaveCoupon = false // 有至少一张对应档位优惠券，让选择优惠券可选
                 this.list_arr_top.map((moneyItem) => {
                   if (item.cashStandard === moneyItem.money) {
                     moneyItem.active = true
                     this.money_num = moneyItem.money
+                    idIsMatch = true
                   } else {
                     moneyItem.active = false
                   }
                 })
               }
             })
+            if (!idIsMatch) {
+              this.assignCouponId = null
+              if (this.ownCouponList.length !== 0) {
+                let arr = []
+                this.ownCouponList.map((i) => {
+                  if (i.cashStandard <= 1000) {
+                    arr.push(i)
+                  }
+                })
+                if (arr.length !== 0) {
+                  arr.sort(function (a, b) {
+                    return a.longStartTime - b.longStartTime
+                  })
+                  let maxFaceValueArr = []
+                  arr.map((j) => {
+                    maxFaceValueArr.push(j.cashBack)
+                  })
+                  let maxFaceValue = Math.max.apply(null, maxFaceValueArr)
+                  arr.some((k) => {
+                    if (maxFaceValue === k.cashBack) {
+                      this.usedCouponId = k.id
+                      console.log(k.id, this.usedCouponId)
+                      return true
+                    }
+                  })
+
+                  this.list_arr_top[1].active = true
+                  this.money_num = this.list_arr_top[1].money
+                  this.selectedCoupon = true
+                } else {
+                  this.list_arr_top[1].active = true
+                  this.money_num = this.list_arr_top[1].money
+                  this.selectedCoupon = false
+                  this.isHaveCoupon = true // 说明没有对应档位的优惠券，让选择优惠券disabled
+                }
+              } else {
+                this.list_arr_top[1].active = true
+                this.money_num = this.list_arr_top[1].money
+                this.selectedCoupon = false
+                this.isHaveCoupon = true // 说明没有对应档位的优惠券，让选择优惠券disabled
+              }
+            }
           }
         })
-        /* this.list_arr_top.forEach((item) => {
-          if (this.couponId === item.money) {
-            item.active = true
-            this.money_num = item.money
-          } else {
-            item.active = false
-          }
-        }) */
       }
     },
     weChatPay () {
@@ -251,7 +349,8 @@ export default {
           })
           this.$wechat.ready(function () {
             let obj = {
-              total_fee: _this.selectedCoupon ? _this.afterDiscount : _this.money_num
+              couponId: _this.selectedCoupon ? _this.usedCouponId : '',
+              total_fee: _this.money_num
             }
             _this.statistics('确认支付', {payType: '微信', money: _this.selectedCoupon ? _this.afterDiscount : _this.money_num})
             wechatPayApi.builtRecharge(obj).then((res) => {
@@ -300,7 +399,7 @@ export default {
     lianlianPay () {
       let obj = {
         couponId: this.selectedCoupon ? this.usedCouponId : '',
-        total_fee: this.selectedCoupon ? this.afterDiscount : this.money_num
+        total_fee: this.money_num
         // total_fee: 0.01 // 测试
       }
       lianlianPayApi.getConfig(obj).then((res) => {
@@ -313,7 +412,12 @@ export default {
       ownApi.getUserInfo().then((res) => { // 是否认证
         if (res.data.code === 0) {
           if (res.data.data.creditStatus !== 'SUCCESS') {
-            this.showConfirm = true
+            if (res.data.data.creditStatus === 'REFUSE') {
+              this.confirmText2 = res.data.data.refuseReason
+              this.showConfirm2 = true
+            } else {
+              this.showConfirm = true
+            }
           } else {
             if (this.payWay === 'wxpay') {
               this.weChatPay()
@@ -363,29 +467,68 @@ export default {
               }
             }
           })
-
-          /* if (this.money_num < this.minRechargeMoney) {
-            this.usedCouponId = null
-            this.selectedCoupon = false
-          } */
         }
       }
     },
     money_num: {
       handler () {
-        if (this.money_num && this.usedCouponId) {
-          if (this.money_num < this.minRechargeMoney) {
-            this.usedCouponId = null
-            this.selectedCoupon = false
-          } else {
+        if (this.ownCouponList.length !== 0) {
+          let arr = []
+          this.ownCouponList.map((i) => {
+            if (i.cashStandard <= this.money_num) {
+              arr.push(i)
+            }
+          })
+          if (arr.length !== 0) {
+            this.isHaveCoupon = false // 说明有对应档位的优惠券，解除选择优惠券disabled
+            arr.sort(function (a, b) {
+              return a.longEndTime - b.longEndTime
+            })
+            let maxFaceValueArr = []
+            arr.map((j) => {
+              maxFaceValueArr.push(j.cashBack)
+            })
+            let maxFaceValue = Math.max.apply(null, maxFaceValueArr)
+            arr.some((k) => {
+              if (maxFaceValue === k.cashBack) {
+                // this.usedCouponId = k.id
+                if (this.assignCouponId === null) {
+                  this.usedCouponId = k.id
+                } else {
+                  this.usedCouponId = this.couponId
+                  // console.log(this.couponId)
+                  this.assignCouponId = null
+                }
+                return true
+              }
+            })
             this.ownCouponList.map((item) => {
               if (item.id === this.usedCouponId) {
                 this.coupomNum = item.cashBack
                 this.afterDiscount = this.money_num - this.coupomNum
                 this.minRechargeMoney = item.cashStandard
+                this.selectedCoupon = true // 确认选择优惠券
+                if (this.money_num < this.minRechargeMoney) {
+                  this.usedCouponId = null
+                  this.selectedCoupon = false
+                }
               }
             })
+          } else {
+            this.usedCouponId = null
+            this.selectedCoupon = false
+            this.isHaveCoupon = true // 说明没有对应档位的优惠券，让选择优惠券disabled
           }
+        }
+      }
+    },
+    payWay: {
+      handler () {
+        if (this.payWay === 'wxpay') {
+          this.statistics('充值中心-点击微信支付按钮', {})
+        }
+        if (this.payWay === 'shortcut') {
+          this.statistics('充值中心-点击快捷支付按钮', {})
         }
       }
     }
@@ -394,17 +537,13 @@ export default {
     if (this.couponId) {
       this.fromCouponSetMoney()
       this.selectedCoupon = true // 从我的优惠券，抢券列表过来的时候显示优惠后的金额，及优惠金额
-    } else {
-      this.getList()
     }
-  }
-  /* beforeRouteEnter (to, from, next) {
+    this.getRechargeConfig()
+  },
+  beforeRouteEnter (to, from, next) {
     next((vm) => {
-      if (from.path === '/coupon' || from.path === '/ownCoupon') {
-        vm.selectedCoupon = true // 从我的优惠券，抢券列表过来的时候显示优惠后的金额，及优惠金额
-      }
     })
-  } */
+  }
 }
 </script>
 
@@ -449,10 +588,17 @@ export default {
       background: #F7F7F7;
     }
     .money_box{
+      min-height: 136px;
+      height: 100%;
       padding: 13px 10px;
       box-sizing: border-box;
       background: #fff;
       text-align: center;
+      .spinner{
+        display: block;
+        margin: 0 auto;
+        margin-top: 48px;
+      }
       .vux-flexbox-item{
         margin-bottom: 18px;
         .money_item{
@@ -472,7 +618,7 @@ export default {
           }
         }
         .active{
-          border:1px solid rgba(31,124,240,0);
+          border:1px solid rgba(144,195,255,1);
           background:linear-gradient(154deg,rgba(98,192,251,1) 0%,rgba(51,140,245,1) 100%);
           box-shadow:0px 2px 5px 0px rgba(144,195,255,1);
           p{
@@ -505,20 +651,25 @@ export default {
         color: #FE8348;
         margin-right: 2px;
       }
+      &.disable{
+        color: #d5d5d5;
+      }
     }
     .pay_way{
       .check_box{
+        position: relative;
         display: block;
         position: relative;
         background: #fff;
         padding: 10px 15px;
         .weui-icon{
-        position: absolute;
-        right: 10px;
-        font-size: 22px;
-        top:50%;
-        transform: translate(0,-50%);
-        }
+          position: absolute;
+          right: 10px;
+          font-size: 22px;
+          top:50%;
+          transform: translate(0,-50%);
+          z-index: 99;
+          }
         .svg-icon.wechat{
           margin-top: -4px;
           vertical-align: middle;
@@ -536,7 +687,13 @@ export default {
           height: 24px;
         }
         input[type ='radio']{
-          display: none
+          width: 100%;
+          height: 41px;
+          position: absolute;
+          left: 0;
+          top: 0;
+          z-index: 999;
+          opacity: 0;
         }
         .weui-icon-circle{
           &::before{
@@ -589,7 +746,7 @@ export default {
 .confirm_btn{
     display: block;
     width: 95%;
-    margin: 30px auto;
+    margin: 0px auto 30px;
     border: none;
     outline: none;
     line-height: 40px;
@@ -620,107 +777,116 @@ export default {
     padding-left: 10px;
     box-sizing: border-box;
   }
-  .coupon_list{
-    position: relative;
-    box-sizing: border-box;
-    padding:0 4px;
-    .empty_box{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 228px;
-      overflow: hidden;
-      text-align: center;
-      transform: translate(-50%, -50%);
-      img{
-        display: inline-block;
-        max-width: 100%;
-        width: 100%;
-        height: auto;
+  .coupon_wrapper{
+    height: 260px;
+    .coupon_list{
+      position: relative;
+      box-sizing: border-box;
+      padding:0 4px;
+      .empty_box{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 228px;
+        overflow: hidden;
+        text-align: center;
+        transform: translate(-50%, -50%);
+        img{
+          display: inline-block;
+          max-width: 100%;
+          width: 100%;
+          height: auto;
+        }
+        p{
+          color: '#C8C8C8';
+          font-size: 12px;
+        }
       }
-      p{
-        color: '#C8C8C8';
-        font-size: 12px;
-      }
-    }
-    ul{
-      height: 250px;
-      overflow-y: auto;
-      padding-top: 6px;
-      li{
-        padding: 0 6px;
-        box-sizing: border-box;
-        position: relative;
-        width: 100%;
-        height: 125px;
-        background: url(./img/coupon_bg.png) no-repeat center center;
-        background-size: cover;
-        list-style: none;
-        .left{
-          float: left;
-          width: 28.84%;
+      ul{
+        /* height: 250px;
+        overflow-y: auto; */
+        padding-top: 6px;
+        -webkit-overflow-scrolling: touch;
+        li{
+          padding: 0 6px;
+          box-sizing: border-box;
+          position: relative;
+          width: 100%;
           height: 125px;
-          h1{
-            font-family: money;
-            font-size: 30px;
-            color: #fff;
-            text-align: center;
-            line-height: 30px;
-            margin-top: 34px;
-            font-weight: 500;
-            span{
-              margin-left: 2px;
+          background: url(./img/coupon_bg.png) no-repeat center center;
+          background-size: cover;
+          list-style: none;
+          .left{
+            float: left;
+            width: 28.84%;
+            height: 125px;
+            h1{
+              font-family: money;
+              font-size: 30px;
+              color: #fff;
+              text-align: center;
+              line-height: 30px;
+              margin-top: 34px;
+              font-weight: 500;
+              span{
+                margin-left: 2px;
+                font-size: 12px;
+              }
+            }
+            p{
               font-size: 12px;
+              color: #fff;
+              text-align: center;
+              line-height: 17px;
             }
           }
-          p{
-            font-size: 12px;
-            color: #fff;
-            text-align: center;
-            line-height: 17px;
+          .right{
+            float: left;
+            overflow: hidden;
+            padding-left: 18px;
+            h2{
+              margin-top: 41px;
+              font-size: 16px;
+              font-weight: 600;
+              color: #333;
+            }
+            p{
+              font-size: 12px;
+              color: #999;
+              line-height: 17px;
+              margin-top: 8px;
+              &.urgency{
+                color: #FC3358;
+              }
+            }
           }
-        }
-        .right{
-          float: left;
-          overflow: hidden;
-          padding-left: 18px;
-          h2{
-            margin-top: 41px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-          }
-          p{
-            font-size: 12px;
-            color: #999;
-            line-height: 17px;
-            margin-top: 8px;
-          }
-        }
-        .grab_btn{
-          input[type ='radio']{
-            position: absolute;
-            display: block;
-            width: calc(100% - 12px);
-            height: 108px;
-            opacity: 0;
-          }
-          .weui-icon-circle{
-            position: absolute;
-            top: 50%;
-            right: 15px;
-            transform: translate(0, -50%);
+          .grab_btn{
+            input[type ='radio']{
+              position: absolute;
+              display: block;
+              width: calc(100% - 12px);
+              height: 108px;
+              opacity: 0;
+              z-index: 1000;
+            }
+            .weui-icon-circle{
+              position: absolute;
+              top: 50%;
+              right: 15px;
+              transform: translate(0, -50%);
+              z-index: 999;
+              &::before{
+                font-size: 22px;
+                color:#E1E1E1;
+              }
+            }
+            input[type ='radio']:checked + .weui-icon-circle{
             &::before{
+              content: '\EA06';
+              color:#1F7CF0;
               font-size: 22px;
-              color:#E1E1E1;
             }
-          }
-          input[type ='radio']:checked + .weui-icon-circle{
-          &::before{
-            content: '\EA06';
-            color:#1F7CF0;
-            font-size: 22px;
-          }
+            }
           }
         }
       }
@@ -729,6 +895,8 @@ export default {
 .confirmText{
   text-align: center;
   font-size: 18px;
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
 /* .vux-pop-in-enter-active,.vux-pop-in-leave-active,.vux-pop-out-enter-active,.vux-pop-out-leave-active {

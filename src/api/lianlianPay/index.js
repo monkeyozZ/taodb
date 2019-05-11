@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 /**
- * 请求兰兰支付配置
+ * 请求lianlian支付配置
  */
 const getConfig = async (obj) => {
   return request({

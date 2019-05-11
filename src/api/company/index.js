@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 /**
- * 获取用户是否需要引导的状态
+ * 获取公司名称
  */
 const searchCompany = async (obj) => {
   return request({
@@ -11,4 +11,15 @@ const searchCompany = async (obj) => {
   })
 }
 
-export default { searchCompany }
+/**
+ * 获取公司名称
+ */
+const validateCompany = async (obj) => {
+  return request({
+    url: '/userCredit/companyInfo',
+    method: 'get',
+    params: obj
+  })
+}
+
+export default { searchCompany, validateCompany }

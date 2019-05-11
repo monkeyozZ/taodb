@@ -5,7 +5,7 @@
     <p>充值失败！</p>
     <div class="btn_box">
       <div>
-        <button class="active">重新充值</button>
+        <button class="active" @click="pay">重新充值</button>
       </div>
     </div>
     <p class="tip">温馨提示：<br>1、由于网络，服务器原因连连充值失败，跳转充值中心<br>2、点击重新充值返回充值中心<br>3、点击返回回到充值中心<br>4、由于支付超过当日限额或者当月限额。</p>
@@ -17,6 +17,12 @@
 export default {
   data () {
     return {}
+  },
+  methods: {
+    pay () {
+      this.statistics('充值成功-继续充值', {})
+      this.$router.push('/recharge')
+    }
   }
 }
 </script>

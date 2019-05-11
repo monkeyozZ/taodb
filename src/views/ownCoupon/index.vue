@@ -16,11 +16,11 @@
           @pullingUp="onPullingUp">
 
           <div class="coupon_list">
-            <div class="empty_box" v-if="this.Data.length === 0">
+            <div class="empty_box" v-if="empty">
                 <img src="./img/empty.png">
                 <p>这里好冷清，毛都没有</p>
               </div>
-            <ul>
+            <ul v-if="hidden">
               <li :class="index === 0 ? '' : (index ===1 ? 'had_used' : 'past_due')" v-for="(item, i) in Data" :key="i">
                 <div class="left">
                   <h1>{{item.cashBack}}<span>元</span></h1>
@@ -28,13 +28,14 @@
                 </div>
                 <div class="right">
                   <h2>{{item.remark}}</h2>
-                  <p :class="item.longEndTime - (new Date()).getTime() <= (86400*2)? 'urgency' : ''">{{item.longEndTime | transformDate}}到期</p>
+                  <p :class="isUrgency(item.longEndTime) ? 'urgency' : ''">{{item.longEndTime | transformDate}}到期</p>
                 </div>
                 <div class="grab_btn" v-if="index === 0">
-                  <router-link :to="{path: '/recharge', query: { couponId: item.id }}" class="use">去使用</router-link>
+                  <router-link :to="{path: '/recharge', query: { couponId: item.id }}" class="use" @click.native="statistics('我的优惠券-未使用列表-点击去使用', {id: item.id})">去使用</router-link>
                 </div>
               </li>
             </ul>
+            <p v-if="index === 0&&hidden&&Data.length !== 0" class="tip">注意：快捷支付未完成时，优惠券会锁定5分钟，在此时间内优惠券不会显示，5分钟后将重新显示，您可以正常使用。</p>
           </div>
     </scroll>
   </div>
@@ -74,7 +75,9 @@ export default {
         pageNumber: 1
       },
       height: '',
-      Data: []
+      Data: [],
+      empty: false,
+      hidden: false
     }
   },
   computed: {
@@ -94,6 +97,7 @@ export default {
   },
   methods: {
     getList () {
+      this.limitQuery.pageNumber = 1 // 重置页码
       let obj = {
         status: this.couponCategory,
         pageSize: this.limitQuery.pageSize,
@@ -101,22 +105,12 @@ export default {
       }
       couponApi.myCoupon(obj).then((res) => {
         if (res.data.code === 0) {
+          this.hidden = true
           this.Data = res.data.data.elements
-          if (this.couponCategory === 'UNUSED') {
-            this.list[0] = `未使用(${res.data.data.elements.length})`
+          if (res.data.data.elements.length === 0) {
+            this.empty = true
           } else {
-            this.list[0] = '未使用'
-          }
-          if (this.couponCategory === 'USED') {
-            this.list[1] = `已使用(${res.data.data.elements.length})`
-          } else {
-            this.list[1] = '已使用'
-          }
-
-          if (this.couponCategory === 'OVERDUE') {
-            this.list[2] = `已过期(${res.data.data.elements.length})`
-          } else {
-            this.list[2] = '已过期'
+            this.empty = false
           }
         }
       })
@@ -156,22 +150,49 @@ export default {
           this.$refs.scroll.forceUpdate()
         }
       })
+    },
+    isUrgency (endTime) {
+      if (this.index === 0) {
+        let timeNum = (endTime - (new Date()).getTime()) / 1000
+        return timeNum <= (86400 * 2)
+      }
     }
   },
   watch: {
     index: {
       handler () {
+        this.hidden = false
+        this.$refs.scroll.scrollTo(0, 0, 0)
         switch (this.index) {
-          case 0: this.couponCategory = 'UNUSED'
+          case 0: this.couponCategory = 'UNUSED'; this.statistics('我的优惠券-点击未使用', {})
             break
-          case 1: this.couponCategory = 'USED'
+          case 1: this.couponCategory = 'USED'; this.statistics('我的优惠券-点击已使用', {})
             break
-          case 2: this.couponCategory = 'OVERDUE'
+          case 2: this.couponCategory = 'OVERDUE'; this.statistics('我的优惠券-点击已过期', {})
             break
           default:this.couponCategory = 'UNUSED'
             break
         }
         this.getList()
+      }
+    },
+    Data: {
+      handler () {
+        if (this.couponCategory === 'UNUSED') {
+          this.list[0] = `未使用(${this.Data.length})`
+        } else {
+          this.list[0] = '未使用'
+        }
+        if (this.couponCategory === 'USED') {
+          this.list[1] = `已使用(${this.Data.length})`
+        } else {
+          this.list[1] = '已使用'
+        }
+        if (this.couponCategory === 'OVERDUE') {
+          this.list[2] = `已过期(${this.Data.length})`
+        } else {
+          this.list[2] = '已过期'
+        }
       }
     }
   },
@@ -250,10 +271,15 @@ export default {
         font-size: 12px;
       }
     }
+    .tip{
+      padding :15px;
+      color: #999;
+    }
     ul{
       overflow: hidden;
       padding-top: 6px;
       li{
+        list-style: none;
         margin-top: 10px;
         padding: 0 6px;
         box-sizing: border-box;

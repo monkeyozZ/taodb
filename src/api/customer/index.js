@@ -10,6 +10,16 @@ const getlist = async (obj) => {
     data: obj
   })
 }
+/**
+ * 获取历史客户列表数据
+ */
+const getHistoryList = async (obj) => {
+  return request({
+    url: '/order/history',
+    method: 'post',
+    data: obj
+  })
+}
 
 /**
  * 获取客户电话号码
@@ -43,4 +53,4 @@ const chargeback = async (obj) => {
     data: obj
   })
 }
-export default { getlist, getTel, setTag, chargeback }
+export default { getlist, getHistoryList, getTel, setTag, chargeback }

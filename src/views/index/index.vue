@@ -6,7 +6,7 @@
             <tab-item class="vux-center" :selected="selected === item" v-for="(item, index) in list" @click="selected = item" :key="index">{{item}}</tab-item>
         </tab>
         <div class="filter" @click="routeTo">
-          <p>筛选</p>
+          <p :class="{had_filter: isFilter}">{{isFilter ? '已筛选' : '筛选'}}<svg-icon icon-class="filter"></svg-icon></p>
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@
             <tab-item class="vux-center" :selected="selected === item" v-for="(item, index) in list" @click="selected = item" :key="index">{{item}}</tab-item>
         </tab>
         <div class="filter" @click="routeTo">
-          <p>筛选</p>
+          <p :class="{had_filter: isFilter}">{{isFilter ? '已筛选' : '筛选'}}<svg-icon icon-class="filter"></svg-icon></p>
         </div>
       </div>
     </div>
@@ -43,7 +43,7 @@
         <list-card :orderData="orderData" @order="order" @stop="stop"></list-card>
         <div class="empty_box" v-if="orderData.length === 0">
           <svg-icon icon-class="empty" class="empty"></svg-icon>
-          <p v-if="Object.keys(orderCondition).length === 0">您当前所在城市暂无订单</p>
+          <p v-if="orderCondition && Object.keys(orderCondition).length === 0">您当前所在城市暂无订单</p>
           <p v-else>暂无订单</p>
         </div>
       </div>
@@ -228,6 +228,13 @@
     class="indexConfirm">
       <p class="confirmText">该订单已被抢</p>
   </confirm>
+  <confirm v-model="showConfirm6"
+    confirm-text="确定"
+    :show-cancel-button="false"
+    @on-confirm="onConfirm6"
+    class="indexConfirm">
+      <p>{{confirmText6}}</p>
+  </confirm>
 </div>
 </scroll>
   <div class="mask" v-if="mask" @click="closeMask">
@@ -252,6 +259,7 @@ import wechatApi from '@/api/wechatPay'
 import shareApi from '@/api/share'
 import ownApi from '@/api/own'
 import registerApi from '@/api/registerAndLogin'
+import filterApi from '@/api/filter'
 const wx = require('weixin-js-sdk')
 export default {
   name: 'index',
@@ -291,6 +299,7 @@ export default {
       showConfirm3: false,
       showConfirm4: false,
       showConfirm5: false,
+      showConfirm6: false,
       status_1: false,
       status_2: false,
       status_3: false,
@@ -301,6 +310,7 @@ export default {
       sign_count: 0,
       confirmText: '',
       confirmText3: '',
+      confirmText6: '',
       customerId: '',
       showQd: false,
       showShare: false,
@@ -341,7 +351,8 @@ export default {
       num: 0,
       ownData: {},
       customerCate: '',
-      height: ''
+      height: '',
+      isFilter: false
     }
   },
   created () {
@@ -378,15 +389,16 @@ export default {
   methods: {
     ...mapActions({
       setCurrentCity: 'setCurrentCity',
-      setPositionY: 'setPositionY'
+      setPositionY: 'setPositionY',
+      setOrderCondition: 'setOrderCondition'
     }),
     closeMask () {
       this.mask = false
     },
     calcHeight (pos, direction) {
-      console.log(pos.y)
+      // console.log(pos.y)
       this.setPositionY(pos.y)
-      console.log('vuex:' + this.positionY, this.$refs.nav.offsetTop, direction)
+      // console.log('vuex:' + this.positionY, this.$refs.nav.offsetTop, direction)
       if (direction === 1) {
         if (pos.y <= '-' + this.$refs.nav.offsetTop) {
           this.sticky = true
@@ -445,25 +457,111 @@ export default {
       return newobj
     },
     getList () {
-      this.limitQuery.pageNumber = 1
-      let obj = this.copy(this.orderCondition)
-      if (!obj.citys) {
-        obj.citys = this.currentCity
-      }
-      obj.customerType = this.customerType
-      obj.pageSize = this.limitQuery.pageSize
-      obj.pageNumber = this.limitQuery.pageNumber
-      this.$vux.loading.show({
-        text: '加载中...'
-      })
-      indexApi.getlist(obj).then((res) => {
-        if (res.data.code === 0) {
-          this.orderData = res.data.data.elements
-          this.$vux.loading.hide()
+      let status = Auth.isAuthLogin() ? Auth.isAuthLogin() : 'false'
+      if (JSON.parse(status)) {
+        if (!this.login_status) {
+          this.limitQuery.pageNumber = 1
+          let obj = this.copy(this.orderCondition)
+          if (!obj.citys) {
+            obj.citys = this.currentCity
+          }
+          obj.customerType = this.customerType
+          obj.pageSize = this.limitQuery.pageSize
+          obj.pageNumber = this.limitQuery.pageNumber
+          this.$vux.loading.show({
+            text: '加载中...'
+          })
+          indexApi.getlist(obj).then((res) => {
+            if (res.data.code === 0) {
+              this.orderData = res.data.data.elements
+              this.$vux.loading.hide()
+            }
+          })
+        } else {
+          filterApi.getSomeFilterList().then((res) => {
+            if (res.data.code === 0) {
+              this.setOrderCondition(res.data.data)
+              Auth.setFilterItem(res.data.data)
+              if (res.data.data && Object.keys(res.data.data).length !== 0) {
+                this.isFilter = true
+              } else {
+                this.isFilter = false
+              }
+              this.limitQuery.pageNumber = 1
+              let obj = this.copy(this.orderCondition)
+              if (!obj.citys) {
+                obj.citys = this.currentCity
+              }
+              obj.customerType = this.customerType
+              obj.pageSize = this.limitQuery.pageSize
+              obj.pageNumber = this.limitQuery.pageNumber
+              this.$vux.loading.show({
+                text: '加载中...'
+              })
+              indexApi.getlist(obj).then((res2) => {
+                if (res2.data.code === 0) {
+                  this.orderData = res2.data.data.elements
+                  this.$vux.loading.hide()
+                }
+              })
+            }
+          }).catch((err) => {
+            console.log(err)
+          })
         }
-      }).catch((err) => {
-        console.log(err)
-      })
+      } else {
+        if (!this.login_status) {
+          this.limitQuery.pageNumber = 1
+          let obj = this.copy(this.orderCondition)
+          if (!obj.citys) {
+            obj.citys = this.currentCity
+          }
+          obj.customerType = this.customerType
+          obj.pageSize = this.limitQuery.pageSize
+          obj.pageNumber = this.limitQuery.pageNumber
+          this.$vux.loading.show({
+            text: '加载中...'
+          })
+          indexApi.getlist(obj).then((res) => {
+            if (res.data.code === 0) {
+              this.orderData = res.data.data.elements
+              this.$vux.loading.hide()
+            }
+          })
+        } else {
+          filterApi.getSomeFilterList().then((res) => {
+            if (res.data.code === 0) {
+              this.setOrderCondition(res.data.data)
+              Auth.setFilterItem(res.data.data)
+              console.log(1111)
+              if (res.data.data && Object.keys(res.data.data).length !== 0) {
+                this.isFilter = true
+              } else {
+                this.isFilter = false
+              }
+              this.limitQuery.pageNumber = 1
+              let obj = this.copy(this.orderCondition)
+              if (!obj.citys) {
+                obj.citys = this.currentCity
+              }
+              obj.customerType = this.customerType
+              obj.pageSize = this.limitQuery.pageSize
+              obj.pageNumber = this.limitQuery.pageNumber
+              this.$vux.loading.show({
+                text: '加载中...'
+              })
+              indexApi.getlist(obj).then((res2) => {
+                if (res2.data.code === 0) {
+                  this.orderData = res2.data.data.elements
+                  this.$vux.loading.hide()
+                }
+              })
+            }
+          }).catch((err) => {
+            console.log(err)
+          })
+        }
+      }
     },
     onPullingDown () { // 下拉刷新
       this.limitQuery.pageNumber = 1
@@ -542,7 +640,12 @@ export default {
       ownApi.getUserInfo().then((res) => { // 是否认证
         if (res.data.code === 0) {
           if (res.data.data.creditStatus !== 'SUCCESS') {
-            this.showConfirm4 = true
+            if (res.data.data.creditStatus === 'REFUSE') {
+              this.confirmText6 = res.data.data.refuseReason
+              this.showConfirm6 = true
+            } else {
+              this.showConfirm4 = true
+            }
           } else {
             let obj = {
               customerId: this.customerId
@@ -641,6 +744,10 @@ export default {
     onConfirm5 () {
       this.statistics('抢单列表-订单已被抢', {})
       this.showConfirm5 = false
+    },
+    onConfirm6 () {
+      this.statistics('抢单列表-拒绝认证弹框-确认', {})
+      this.showConfirm6 = false
     },
     onCancel () {
       this.showConfirm = false
@@ -1068,14 +1175,14 @@ export default {
     },
     orderCondition: {
       handler () {
-        this.getList()
+        // this.getList()
         this.statistics('抢单筛选', {'type': this.customerType === 'OPTIMIZATION' ? '优选' : '淘单', 'options': this.orderCondition})
       }
     },
     currentCity: {
       handler () {
         this.city = this.currentCity
-        this.getList()
+        // this.getList()
       }
     }
   },
@@ -1088,7 +1195,7 @@ export default {
   beforeRouteEnter (to, from, next) {
     next(vm => {
       // 通过 `vm` 访问组件实例
-      if (from.path !== '/filter' && from.path !== '/setcurrentcity' && from.path !== '/' && !new RegExp('orderDetails').test(from.path)) {
+      if (!new RegExp('orderDetails').test(from.path)) {
         vm.getList()
       }
       if (from.path === '/own' || from.path === '/customer' || from.path === '/certification') {
@@ -1111,7 +1218,6 @@ export default {
           vm.$refs.scroll.scrollTo(0, vm.positionY, 1)
         }, 40)
       }
-      console.log(vm.height)
     })
   },
   activated () {
@@ -1206,18 +1312,32 @@ export default {
       .filter{
         position: absolute;
         top: 0;
-        right: 0;
-        width: 25%;
+        right: -25%;
+        width: 32%;
         height: 44px;
         background: #fff;
         line-height: 44px;
+        &::before{
+          position: absolute;
+          content: '';
+          height: 25px;
+          width: 1px;
+          background: #DDDDDD;
+          top: 50%;
+          left: 0;
+          transform: translate(0, -50%);
+        }
         p{
           text-align: center;
           color: #666;
           font-size: 15px;
           .svg-icon{
+            margin-left: 5px;
             width: 14px;
             height: 14px;
+          }
+          &.had_filter{
+            color: #FF703C;
           }
         }
       }
@@ -1564,6 +1684,8 @@ export default {
 .confirmText{
   text-align: center;
   font-size: 18px;
+  word-break:break-all;
+  word-wrap:break-word;
 }
 .mask{
   position: fixed;

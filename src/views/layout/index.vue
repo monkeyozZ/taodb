@@ -1,7 +1,10 @@
 <template>
   <div class="main" :class="{paddingTop: isHadHeader}">
-    <my-header v-if="$route.path !== '/setcurrentcity' && $route.path !== '/company'"></my-header>
-    <keep-alive include="index,customer,filters,city,certification,uploadIdcard,uploadAptitudes,news">
+    <my-header v-if="$route.path !== '/setcurrentcity' &&
+    $route.path !== '/company' &&
+    $route.path !== '/filter' &&
+    $route.path !== '/sendOrders'"></my-header>
+    <keep-alive include="index,customer,filters,sendOrders,certification,uploadIdcard,uploadAptitudes,news">
       <router-view></router-view>
     </keep-alive>
     <my-tabbar v-if="$route.path === '/'|| $route.path === '/customer'|| $route.path === '/own'"></my-tabbar>
@@ -24,7 +27,10 @@ export default {
   watch: {
     '$route': {
       handler () {
-        if (new RegExp('setcurrentcity').test(this.$route.path) || new RegExp('company').test(this.$route.path)) {
+        if (new RegExp('setcurrentcity').test(this.$route.path) ||
+        new RegExp('company').test(this.$route.path) ||
+        new RegExp('filter').test(this.$route.path) ||
+        new RegExp('sendOrders').test(this.$route.path)) {
           this.isHadHeader = false
         } else {
           this.isHadHeader = true
@@ -33,7 +39,10 @@ export default {
     }
   },
   mounted () {
-    if (new RegExp('setcurrentcity').test(this.$route.path) || new RegExp('company').test(this.$route.path)) {
+    if (new RegExp('setcurrentcity').test(this.$route.path) ||
+    new RegExp('company').test(this.$route.path) ||
+    new RegExp('filter').test(this.$route.path) ||
+    new RegExp('sendOrders').test(this.$route.path)) {
       this.isHadHeader = false
     } else {
       this.isHadHeader = true

@@ -98,6 +98,17 @@ const router = new Router({
       ]
     },
     {
+      path: '/historyOrders',
+      component: layout,
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/historyOrders/index'),
+          meta: { title: '历史订单' }
+        }
+      ]
+    },
+    {
       path: '/own',
       component: layout,
       children: [
@@ -120,6 +131,17 @@ const router = new Router({
       ]
     },
     {
+      path: '/sendOrders',
+      component: layout,
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/sendOrders/index'),
+          meta: { title: '派单设置' }
+        }
+      ]
+    },
+    {
       path: '/city',
       component: layout,
       children: [
@@ -137,6 +159,16 @@ const router = new Router({
         {
           path: '',
           component: () => import('@/views/city/selectCity')
+        }
+      ]
+    },
+    {
+      path: '/setsendorderscity',
+      component: layout,
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/city/sendOrderselectCity')
         }
       ]
     },
@@ -377,15 +409,26 @@ const router = new Router({
     {
       path: '/share',
       component: () => import('@/views/share')
+    },
+    {
+      path: '/wxauth',
+      component: () => import('@/views/wxAuth')
     }
   ]
 })
 
 router.beforeEach((to, from, next) => {
-  // Auth.setRouterUrl(to.fullPath) // 记录router，当身份过期时授权成功重定向
+  if (!new RegExp('wxauth').test(to.path)) {
+    Auth.setRouterUrl(to.fullPath) // 记录router，当身份过期时授权成功重定向
+    /* if (to.path === '/') {
+      Auth.setRouterUrl('/') // 记录router，当身份过期时授权成功重定向
+    } else {
+      Auth.setRouterUrl(from.fullPath) // 记录router，当身份过期时授权成功重定向
+    } */
+  }
   bus.$emit('resetIphonexPosition', to.path) // iphoneX安全视区 hack
   // 通过userAgent判断IOS环境，hank ios中微信分享初始化配置
-  let isIOS = function () {
+  const isIOS = function () {
     var isIphone = navigator.userAgent.includes('iPhone')
     var isIpad = navigator.userAgent.includes('iPad')
     if (isIphone || isIpad) {
@@ -396,7 +439,7 @@ router.beforeEach((to, from, next) => {
   }
   // let url = `https://tdb.baojeah.com/taodb${to.path}`
 
-  // 初始化登录状态，token
+  // 初始化登录状态
   let isLogin = Auth.isLogin() ? Auth.isLogin() : 'false'
   store.dispatch('setLoginstatus', JSON.parse(isLogin))
 
@@ -407,65 +450,56 @@ router.beforeEach((to, from, next) => {
   // 微信浏览器时要做的事
   let ua = navigator.userAgent.toLowerCase()
   if (ua.indexOf('micromessenger') > -1 && to.path !== '/share') {
+    let userInfo = Auth.getUserInfo() ? Auth.getUserInfo() : null
+
+    if (userInfo) {
+      store.dispatch('setuserinfo', userInfo) // 初始化用户信息 ps: 第二次进来注册需要的openId
+    }
+
+    const checkToken = async () => {
+      let res = await authApi.checkToken()
+      if (res.data.code !== 0) {
+        Auth.setAuthLoginStatus(false)
+        let gourl = encodeURI(process.env.BASE_SHAREURL + '/wxauth')
+        window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + process.env.APPID + '&redirect_uri=' + gourl + '&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect'
+        // next()
+      } else {
+        next()
+      }
+    }
+    try {
+      router.options.routes.map((item) => {
+        if (to.path === item.path) {
+          if (!new RegExp('wxauth').test(to.path)) {
+            checkToken()
+            // next(false)
+          }
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
+
+    // 初始化分享配置
     let url = `${process.env.BASE_SHAREURL}${to.path}`
     if (isIOS()) {
-      if (to.path === '/') {
+      /* if (to.path === '/') {
         initShare(url)
         next()
       } else {
         next()
-      }
+      } */
+      initShare(url)
+      // next()
     } else {
       initShare(url)
-      next()
-    }
-
-    let userInfo = Auth.getUserInfo() ? Auth.getUserInfo() : null
-    let status = Auth.isAuthLogin() ? Auth.isAuthLogin() : 'false'
-    if (userInfo) {
-      store.dispatch('setuserinfo', userInfo) // 初始化用户信息 ps: 第二次进来注册需要的openId
-    } else {
-      if (!JSON.parse(status)) {
-        Auth.setAuthLoginStatus(false) // 无userInfo时，授权状态重置
-      }
-    }
-
-    // let status = Auth.isAuthLogin() ? Auth.isAuthLogin() : 'false'
-    if (to.query.code && JSON.parse(status) === false) {
-      Auth.setAuthLoginStatus(true)
-      authApi.getUserInfo(to.query.code).then((res) => {
-        if (res.data.code === 0) {
-          store.dispatch('setLoginstatus', true)
-          store.dispatch('setJdbAuthToken', res.data.data)
-          next('/')
-        }
-        if (res.data.code === -1) {
-          store.dispatch('setLoginstatus', false)
-          store.dispatch('setuserinfo', res.data.data)
-          next('/')
-        }
-      }).catch((err) => {
-        console.log(err)
-      })
-      next()
-    }
-
-    status = Auth.isAuthLogin() ? Auth.isAuthLogin() : 'false'
-
-    if (JSON.parse(status) === true) {
-      Auth.setAuthLoginStatus(true)
-      next()
-    }
-
-    if (JSON.parse(status) === false) {
-      let fullurl = to.fullPath
-      // let gourl = encodeURI('https://tdb.baojeah.com/taodb' + fullurl)
-      let gourl = encodeURI(process.env.BASE_SHAREURL + fullurl)
-      window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx3317c63e1deebd7a&redirect_uri=' + gourl + '&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect'
-      return false
+      // next()
     }
 
     if (to.path === '/correlationMobile') { // 微信中重定向
+      next()
+    }
+    if (to.path === '/wxauth') {
       next()
     }
   } else {
@@ -483,21 +517,23 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  if (Auth.isAuthLogin()) {
-    if (store.getters.login_status) {
-      next()
-    } else {
-      if (to.path !== '/') {
-        if (to.path !== '/setpassword') {
-          if (to.path !== '/correlationMobile') {
-            if (to.path !== '/share') {
-              if (to.path !== '/xieyi') {
-                if (to.path !== '/filter') {
-                  if (to.path !== '/city') {
-                    if (to.path !== '/setcurrentcity') {
-                      if (to.path !== '/faq') {
-                        if (!new RegExp('issue').test(to.path)) {
-                          next('/correlationMobile')
+  if (to.path !== '/wxauth') {
+    if (Auth.isAuthLogin()) {
+      if (store.getters.login_status) {
+        // next()
+      } else {
+        if (to.path !== '/') {
+          if (to.path !== '/setpassword') {
+            if (to.path !== '/correlationMobile') {
+              if (to.path !== '/share') {
+                if (to.path !== '/xieyi') {
+                  if (to.path !== '/filter') {
+                    if (to.path !== '/city') {
+                      if (to.path !== '/setcurrentcity') {
+                        if (to.path !== '/faq') {
+                          if (!new RegExp('issue').test(to.path)) {
+                            next('/correlationMobile')
+                          }
                         }
                       }
                     }
@@ -508,24 +544,24 @@ router.beforeEach((to, from, next) => {
           }
         }
       }
-    }
-  } else {
-    if (store.getters.login_status) {
-      next()
     } else {
-      if (to.path !== '/') {
-        if (to.path !== '/passlogin') {
-          if (to.path !== '/setpassword') {
-            if (to.path !== '/findpassword') {
-              if (to.path !== '/resetPassword') {
-                if (to.path !== '/share') {
-                  if (to.path !== '/xieyi') {
-                    if (to.path !== '/filter') {
-                      if (to.path !== '/city') {
-                        if (to.path !== '/setcurrentcity') {
-                          if (to.path !== '/faq') {
-                            if (!new RegExp('issue').test(to.path)) {
-                              next('/login')
+      if (store.getters.login_status) {
+        next()
+      } else {
+        if (to.path !== '/') {
+          if (to.path !== '/passlogin') {
+            if (to.path !== '/setpassword') {
+              if (to.path !== '/findpassword') {
+                if (to.path !== '/resetPassword') {
+                  if (to.path !== '/share') {
+                    if (to.path !== '/xieyi') {
+                      if (to.path !== '/filter') {
+                        if (to.path !== '/city') {
+                          if (to.path !== '/setcurrentcity') {
+                            if (to.path !== '/faq') {
+                              if (!new RegExp('issue').test(to.path)) {
+                                next('/login')
+                              }
                             }
                           }
                         }
@@ -543,51 +579,46 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.title) {
     store.dispatch('setHeaderText', to.meta.title)
-    next()
   }
   if (to.path === '/issue/auth') {
     store.dispatch('setHeaderText', '认证审核')
-    next()
   } else if (to.path === '/issue/order') {
     store.dispatch('setHeaderText', '抢单')
-    next()
   } else if (to.path === '/issue/recharge') {
     store.dispatch('setHeaderText', '充值和退款')
-    next()
   } else if (to.path === '/issue/invite') {
     store.dispatch('setHeaderText', '邀请奖励')
-    next()
   } else if (to.path === '/issue/integral') {
     store.dispatch('setHeaderText', '积分')
-    next()
   } else if (to.path === '/issue/other') {
     store.dispatch('setHeaderText', '其他')
-    next()
   }
   if (to.path === '/city') {
     store.dispatch('setRightText', { text: '完成', color: '#1F7CF0' })
-    next()
   } else if (to.path === '/news') {
     store.dispatch('setRightText', { text: '全部已读', color: '#333' })
-    next()
   } else {
     store.dispatch('setRightText', { text: '', color: '#333' })
+  }
+  if (ua.indexOf('micromessenger') < 0) {
     next()
   }
-  next()
 })
 
-router.beforeEach((to, from, next) => {
+router.afterEach((to, from, next) => {
   /* eslint-disable */
-  var _hmt = _hmt || [];
-  (function () {
-    var hm = document.createElement('script')
-    hm.src = 'https://hm.baidu.com/hm.js?56ddfd7bb9fc37fc0115a264470fb31b'
-    var s = document.getElementsByTagName('script')[0]
-    s.parentNode.insertBefore(hm, s)
-  })()
-
-  _hmt.push(['_trackPageview', '/#' + to.fullPath])
-  next()
+  setTimeout(() => {
+    var _hmt = _hmt || [];
+    (function () {
+      //每次执行前，先移除上次插入的代码
+      document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?56ddfd7bb9fc37fc0115a264470fb31b";
+      hm.id = "baidu_tj"
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })()
+  }, 0)
+  
 })
 export default router

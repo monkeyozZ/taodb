@@ -23,6 +23,7 @@ const auth = {
   // 设置授权登录状态
   setAuthLoginStatus: function (params) {
     // 设置超时登录时间，在该时间范围内没有任何请求操作则自动删除
+    console.log(params)
     localStorage.setItem(this.authLoginKey, JSON.stringify(params))
     // Cookies.set(this.authLoginKey, params)
   },
@@ -123,6 +124,24 @@ const auth = {
     Cookies.set('personalid', token, {
       expires: maxAge
     })
+  },
+
+  // 储存筛选条件
+  setFilterItem: function (obj) {
+    localStorage.setItem('FilterItem', JSON.stringify(obj))
+  },
+  // 获取筛选条件
+  getFilterItem: function () {
+    return JSON.parse(localStorage.getItem('FilterItem'))
+  },
+
+  // 储存派单筛选条件
+  setSendOrdersFilterItem: function (obj) {
+    localStorage.setItem('sendOrdersFilterItem', JSON.stringify(obj))
+  },
+  // 获取派单筛选条件
+  getSendOrdersFilterItem: function () {
+    return JSON.parse(localStorage.getItem('sendOrdersFilterItem'))
   },
 
   // 移除Token

@@ -27,27 +27,30 @@
         <button @click="goRecharge"><img src="./img/recharge.png">充值</button>
       </div>
     </div>
-    <div class="sign_box" v-if="ownData.creditStatus === 'SUCCESS'">
-      <flexbox :gutter="0" wrap="wrap">
-        <flexbox-item :span="12/7" v-for="(item, index) in dayList" :key="index">
-          <div class="day_item">
-            <p>第{{index + 1}}天</p>
-            <div class="circle" @click="qiandao(item.showText)" :class="{active: item.showText}">
-              <p>{{item.label}}</p>
-              <p class="dot"> <span v-if="item.showText">点击签到</span> <svg-icon icon-class="hassign" v-if="item.isSign"></svg-icon></p>
+    <div class="qd_credit_box">
+      <spinner type="lines" size="40px" class="spinner" v-if="showSpinner"></spinner>
+      <div class="sign_box" v-if="qdIsShow">
+        <flexbox :gutter="0" wrap="wrap">
+          <flexbox-item :span="12/7" v-for="(item, index) in dayList" :key="index">
+            <div class="day_item">
+              <p>第{{index + 1}}天</p>
+              <div class="circle" @click="qiandao(item.showText)" :class="{active: item.showText}">
+                <p>{{item.label}}</p>
+                <p class="dot"> <span v-if="item.showText">点击签到</span> <svg-icon icon-class="hassign" v-if="item.isSign"></svg-icon></p>
+              </div>
             </div>
-          </div>
-        </flexbox-item>
-      </flexbox>
-    </div>
-    <div class="upload_box" v-if="ownData.creditStatus !== 'SUCCESS'">
-      <div class="rote_line" @click="goRz">
-        <div class="content">
-          <div class="middle" :class="{refuse_res_box: ownData.creditStatus === 'REFUSE'}">
-            <img src="./img/re_2.png" v-if="ownData.creditStatus !== 'REFUSE'">
-            <p class="title" v-if="ownData.creditStatus !== 'REFUSE'">快速实名认证</p>
-            <p class="refuse_title" v-if="ownData.creditStatus === 'REFUSE'">认证未通过原因:</p>
-            <p class="result">{{certificationStatus}}</p>
+          </flexbox-item>
+        </flexbox>
+      </div>
+      <div class="upload_box" v-if="creditStatus">
+        <div class="rote_line" @click="goRz">
+          <div class="content">
+            <div class="middle" :class="{refuse_res_box: ownData.creditStatus === 'REFUSE'}">
+              <img src="./img/re_2.png" v-if="ownData.creditStatus !== 'REFUSE'">
+              <p class="title" v-if="ownData.creditStatus !== 'REFUSE'">快速实名认证</p>
+              <p class="refuse_title" v-if="ownData.creditStatus === 'REFUSE'">认证未通过原因:</p>
+              <p class="result">{{certificationStatus}}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -57,8 +60,11 @@
         <cell title="实名认证" :value="certificationStatus" is-link link="/certification" v-if="ownData.creditStatus === 'SUCCESS'"  @click.native="statistics('点击实名认证', {type: '菜单', 认证状态: '已认证'})">
           <img slot="icon" src="./img/rz.png" class="icon">
         </cell>
-        <cell title="每日抢券" value="每日十点开抢" is-link link="/coupon" @click.native="statistics('点击每日抢券', {})">
+        <cell title="每日抢券" value="每日九点开抢" is-link link="/coupon" @click.native="statistics('点击每日抢券', {})">
           <img slot="icon" src="./img/coupon.png" class="icon">
+        </cell>
+        <cell title="派单设置" :value="sendOrderText" is-link @click.native="goSendOrders()">
+          <img slot="icon" src="./img/send_orders.png" class="icon">
         </cell>
         <cell title="邀请有礼" :value="`邀请码${ownData.inviteCode?ownData.inviteCode:''}`" is-link link="/invite" @click.native="statistics('点击邀请有礼', {})">
           <img slot="icon" src="./img/gift.png" class="icon">
@@ -216,6 +222,22 @@
           </div>
         </div>
       </x-dialog>
+
+      <confirm v-model="showConfirm"
+        confirm-text="去认证"
+        cancel-text="取消"
+        @on-cancel="onCancel"
+        @on-confirm="onConfirm"
+        class="indexConfirm">
+          <p class="confirmText">通过身份认证才能派单哦！</p>
+      </confirm>
+      <confirm v-model="showConfirm2"
+        confirm-text="确定"
+        :show-cancel-button="false"
+        @on-confirm="onConfirm2"
+        class="indexConfirm">
+          <p>{{confirmText2}}</p>
+      </confirm>
     </div>
   </div>
 </scroll>
@@ -237,7 +259,7 @@
 </template>
 
 <script>
-import { Badge, Group, Cell, Flexbox, FlexboxItem, XDialog, TransferDomDirective as TransferDom } from 'vux'
+import { Badge, Group, Confirm, Cell, Flexbox, FlexboxItem, XDialog, Spinner, TransferDomDirective as TransferDom } from 'vux'
 import { mapGetters } from 'vuex'
 import ownApi from '@/api/own'
 import signApi from '@/api/sign'
@@ -306,7 +328,13 @@ export default {
       num: 0,
       mask: false,
       height: '',
-      lead: false
+      lead: false,
+      creditStatus: false,
+      qdIsShow: false,
+      showSpinner: false,
+      showConfirm: false,
+      showConfirm2: false,
+      confirmText2: ''
     }
   },
   components: {
@@ -315,7 +343,9 @@ export default {
     Cell,
     XDialog,
     Flexbox,
-    FlexboxItem
+    FlexboxItem,
+    Spinner,
+    Confirm
   },
   computed: {
     ...mapGetters(['token', 'user_info', 'login_status']),
@@ -330,9 +360,42 @@ export default {
       if (ua.indexOf('micromessenger') > 0) {
         return true
       }
+    },
+    sendOrderText () {
+      let text = '开启派单'
+      if (this.ownData.orderPushStatus) {
+        if (this.ownData.orderPushStatus === 'CLOSED' || this.ownData.orderPushStatus === 'COMPLETE') {
+          text = '开启派单'
+        } else {
+          text = '正在派单'
+        }
+      }
+      return text
     }
   },
   methods: {
+    goSendOrders () {
+      if (this.ownData.creditStatus !== 'SUCCESS') {
+        if (this.ownData.creditStatus === 'REFUSE') {
+          this.confirmText2 = this.ownData.refuseReason
+          this.showConfirm2 = true
+        } else {
+          this.showConfirm = true
+        }
+      } else {
+        this.$router.push('/sendOrders')
+      }
+    },
+    onCancel () {
+      this.showConfirm = false
+      return false
+    },
+    onConfirm () {
+      this.$router.push('/certification')
+    },
+    onConfirm2 () {
+      this.showConfirm2 = false
+    },
     closeLead () {
       this.lead = false
     },
@@ -540,8 +603,10 @@ export default {
       }
     },
     getUserInfo () {
+      this.showSpinner = true
       ownApi.getUserInfo().then((res) => {
         if (res.data.code === 0) {
+          this.showSpinner = false
           this.unReadCount = res.data.data.unReadCount > 0 ? `您有${res.data.data.unReadCount}条未读消息` : ''
           this.ownData = res.data.data
           bus.$emit('setOwnData', res.data.data)
@@ -553,6 +618,11 @@ export default {
           }
           if (res.data.data.creditStatus === 'SUCCESS') {
             this.certificationStatus = '已认证'
+            this.qdIsShow = true
+            this.creditStatus = false
+          } else {
+            this.qdIsShow = false
+            this.creditStatus = true
           }
           if (res.data.data.creditStatus === 'FAIL') {
             this.certificationStatus = '认证失败'
@@ -979,112 +1049,121 @@ export default {
         }
       }
   }
-  .sign_box{
+  .qd_credit_box{
+    min-height: 102px;
+    height: 100%;
     margin-top: 36px;
-    padding: 20px 24px;
-    box-sizing: border-box;
-    background: #fff;
-    background-size: cover;
-    background-color: #fff;
-    .day_item{
-      >p{
-        font-size: 12px;
-        color: #565656;
-        text-align: center;
-      }
-      .circle{
-        position: relative;
-        width: 38px;
-        height: 38px;
-        margin: 0 auto;
-        margin-top: 7px;
-        border-radius: 50%;
-        background:linear-gradient(135deg,#5AA4FF 0%,#317CFF 100%);
-        &.active{
-          background: #006AFF;
-          p{
-            &:first-child{
-              color: rgba(255, 255, 255, .4)
+    overflow: hidden;
+    .spinner{
+      display: block;
+      margin: 0 auto;
+      margin-top: 31px;
+    }
+    .sign_box{
+      padding: 20px 24px;
+      box-sizing: border-box;
+      background: #fff;
+      background-size: cover;
+      background-color: #fff;
+      .day_item{
+        >p{
+          font-size: 12px;
+          color: #565656;
+          text-align: center;
+        }
+        .circle{
+          position: relative;
+          width: 38px;
+          height: 38px;
+          margin: 0 auto;
+          margin-top: 7px;
+          border-radius: 50%;
+          background:linear-gradient(135deg,#5AA4FF 0%,#317CFF 100%);
+          &.active{
+            background: #006AFF;
+            p{
+              &:first-child{
+                color: rgba(255, 255, 255, .4)
+              }
             }
           }
-        }
-        p{
-          font-size: 16px;
-          color: #fff;
-          text-align: center;
-          line-height: 38px;
-        }
-        .dot{
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 100%;
-          height: 100%;
-          transform: translate(-50%, -50%);
-          font-size: 14px;
-          text-align: center;
-          span{
-            display: block;
-            width: 60px;
-            margin-left: -11px;
-            transform: scale(0.6)
+          p{
+            font-size: 16px;
+            color: #fff;
+            text-align: center;
+            line-height: 38px;
           }
-          .svg-icon{
+          .dot{
             position: absolute;
-            bottom: -1px;
-            right: -1px;
-            width: 10px;
-            height: 10px;
-            color: #00C922;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            text-align: center;
+            span{
+              display: block;
+              width: 60px;
+              margin-left: -11px;
+              transform: scale(0.6)
+            }
+            .svg-icon{
+              position: absolute;
+              bottom: -1px;
+              right: -1px;
+              width: 10px;
+              height: 10px;
+              color: #00C922;
+            }
           }
         }
       }
     }
-  }
-  .upload_box{
-    margin-top: 36px;
-    box-sizing: border-box;
-    background: #fff;
-    overflow: hidden;
-    .rote_line{
-      width: 94.67%;
-      margin: 10px auto;
-      background: repeating-linear-gradient(135deg, transparent, transparent 3px, #C8C8C8 3px, #C8C8C8 8px);
-      animation: shine 1s infinite linear;
+    .upload_box{
+      box-sizing: border-box;
+      background: #fff;
       overflow: hidden;
-      .content{
-        position: relative;
-        width: calc(100% - 2px);
-        margin: 1px auto;
-        height: 80px;
-        background: #fff;
-        box-sizing: border-box;
-        .middle{
-          position: absolute;
-          width: 47%;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          &.refuse_res_box{
-            width: 80%;
-            text-align: center;
-          }
-          img{
-            float: left;
-            margin-right: 15px;
-            display: inline-block;
-            width: 60px;
-            height: auto;
-          }
-          .title{
-            font-size: 14px;
-            color: #333;
-            overflow: hidden;
-          }
-          .result{
-            font-size: 13px;
-            color: #9F9F9F;
-            overflow: hidden;
+      .rote_line{
+        width: 94.67%;
+        margin: 10px auto;
+        background: repeating-linear-gradient(135deg, transparent, transparent 3px, #C8C8C8 3px, #C8C8C8 8px);
+        animation: shine 1s infinite linear;
+        overflow: hidden;
+        .content{
+          position: relative;
+          width: calc(100% - 2px);
+          margin: 1px auto;
+          height: 80px;
+          background: #fff;
+          box-sizing: border-box;
+          .middle{
+            position: absolute;
+            width: 47%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            &.refuse_res_box{
+              width: 80%;
+              text-align: center;
+            }
+            img{
+              float: left;
+              margin-right: 15px;
+              display: inline-block;
+              width: 60px;
+              height: auto;
+            }
+            .title{
+              font-size: 14px;
+              color: #333;
+              overflow: hidden;
+            }
+            .result{
+              font-size: 13px;
+              color: #9F9F9F;
+              overflow: hidden;
+            }
           }
         }
       }
@@ -1099,7 +1178,7 @@ export default {
         .weui-cell{
           .icon{
             display: inline-block;
-            width: 34px;
+            width: 28px;
             vertical-align: middle;
           }
           .vux-cell-bd{

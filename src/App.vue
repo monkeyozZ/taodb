@@ -190,4 +190,9 @@ export default {
   .mrt20{
     margin-top: 20px;
   }
+  ul{
+    li{
+      list-style: none;
+    }
+  }
 </style>

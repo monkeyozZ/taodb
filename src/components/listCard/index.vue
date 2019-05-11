@@ -2,7 +2,7 @@
   <div class="list_box">
     <div class="list_item" v-for="(item, index) in orderData" :key="index" @click="Godetails(item.id, item.type)">
       <div class="list_header">
-        <flexbox :gutter="0" v-if="$route.path !== '/customer' && !item.meta">
+        <flexbox :gutter="0" v-if="$route.path !== '/customer' && !item.meta && $route.path !== '/historyOrders'">
           <flexbox-item>
             <span v-if="item.gender === '男'" class="name_box">{{item.surname | substring2}}先生</span>
             <span class="name_box" v-else>{{item.surname | substring2}}女士</span>
@@ -10,25 +10,26 @@
             <span class="tag_box" :class="item.type === 'ORDINARY' ? 'tao' : 'you'">{{item.type | transformTypeText}}</span>
           </flexbox-item>
           <flexbox-item :span="3" class="time_box">
-            <span>{{item.applyTimeStr ? item.applyTimeStr : item.createTimeStr}}</span>
+            <span>{{item.applyTimeStr}}</span>
           </flexbox-item>
         </flexbox>
-        <flexbox :gutter="0" v-else-if="$route.path === '/customer' && item.meta">
+        <flexbox :gutter="0" v-else-if="$route.path === '/customer' && item.meta || $route.path === '/historyOrders'">
           <flexbox-item>
+            <span class="sendIcon" v-if="item.category === 'PUSH'"><img src="./img/sendIcon.png"></span>
             <span v-if="item.meta.gender === '男'" class="name_box">{{item.meta.surname | substring2}}先生</span>
             <span class="name_box" v-else>{{item.meta.surname | substring2}}女士</span>
             <span class="money_box">{{item.meta.loanMoneyStr}}<em>万元</em></span>
             <span class="tag_box" :class="item.type === 'ORDINARY' ? 'tao' : 'you'">{{item.type | transformTypeText}}</span>
           </flexbox-item>
           <flexbox-item :span="3" class="time_box">
-            <span>{{item.applyTimeStr ? item.applyTimeStr : item.createTimeStr}}</span>
+            <span>{{item.createTimeStr}}</span>
           </flexbox-item>
         </flexbox>
       </div>
       <div class="list_body">
         <div class="city_order">
           <flexbox :gutter="0" wrap="wrap" align="flex-start">
-            <flexbox-item :span="6" v-if="$route.path !== '/customer'">
+            <flexbox-item :span="6" v-if="$route.path !== '/customer' && $route.path !== '/historyOrders'">
               <div class="city">
                 <svg-icon icon-class="address"></svg-icon>
                 <span v-if="$route.path !== '/customer'">{{item.city}}</span>
@@ -38,35 +39,34 @@
             <flexbox-item  v-else>
               <div class="city customer">
                 <svg-icon icon-class="address"></svg-icon>
-                <span v-if="$route.path !== '/customer'">{{item.city}}</span>
+                <span v-if="$route.path !== '/customer' && $route.path !== '/historyOrders'">{{item.city}}</span>
                 <span v-else-if="item.meta">{{item.meta.city}}</span>
               </div>
             </flexbox-item>
-            <flexbox-item :span="6" v-if="$route.path !== '/customer' && item.type === 'OPTIMIZATION'">
+            <flexbox-item :span="6" v-if="$route.path !== '/customer' && $route.path !== '/historyOrders'">
               <div v-if="$route.path === '/'" class="btn_price">
-                <div class="price_box" :class="{noRebate: item.rebate === 10, you: item.type === 'OPTIMIZATION' && item.rebate !== 10}">
-                 <span v-if="item.rebate !== 10"> {{item.rebate}}折优惠</span>
+                <div class="price_box" :class="{you: item.type === 'OPTIMIZATION', tao: item.type !== 'OPTIMIZATION'}">
+                 <span v-if="item.type === 'OPTIMIZATION'"> {{item.rebate}}折优惠</span>
                  <span v-else> {{item.price}}{{item.type | transformUnit}}</span>
                 </div>
-                <button class="button" :class="{noRebate: item.rebate === 10}" @click="order(item.type, item.discountPrice, item.id)" v-if="item.status !== 'SOLD' && item.rebate !== 10">{{item.discountPrice}}{{item.type | transformUnit}}(<em>原价{{item.price}}</em>)</button>
-                <button class="button" :class="{noRebate: item.rebate === 10}" @click="order(item.type, item.discountPrice, item.id)" v-if="item.status !== 'SOLD' && item.rebate === 10">立即抢购</button>
+                <button class="button"  @click="order(item.type, item.discountPrice, item.id)" v-if="item.status !== 'SOLD' && item.type === 'OPTIMIZATION'">{{item.discountPrice}}{{item.type | transformUnit}}(<em>原价{{item.price}}</em>)</button>
+                <button class="button"  @click="order(item.type, item.price, item.id)" v-if="item.status !== 'SOLD' && item.type !== 'OPTIMIZATION'">立即抢购</button>
                 <button class="button2" v-if="item.status === 'SOLD'" @click="stop">已被抢</button>
               </div>
             </flexbox-item>
-            <flexbox-item :span="6" v-if="$route.path !== '/customer' && item.type === 'ORDINARY'">
+            <!-- <flexbox-item :span="6" v-if="$route.path !== '/customer' && item.type === 'ORDINARY'">
               <div v-if="$route.path === '/'" class="btn_price">
                 <div class="price_box tao">
-                 <span v-if="item.rebate !== 10"> {{item.rebate}}折优惠</span>
-                 <span v-else> {{item.price}}{{item.type | transformUnit}}</span>
+                 <span> {{item.price}}{{item.type | transformUnit}}</span>
                 </div>
                 <button class="button" @click="order(item.type, item.price, item.id)" v-if="item.status !== 'SOLD'">立即抢购</button>
                 <button class="button2" v-if="item.status === 'SOLD'" @click="stop">已被抢</button>
               </div>
-            </flexbox-item>
+            </flexbox-item> -->
           </flexbox>
         </div>
         <div class="aptitude_item">
-          <flexbox :gutter="0" wrap="wrap" v-if="$route.path !== '/customer'">
+          <flexbox :gutter="0" wrap="wrap" v-if="$route.path !== '/customer' && $route.path !== '/historyOrders'">
             <flexbox-item :span="12/5">
               <div>
                 <img src="./img/home.png" alt="房产">
@@ -131,7 +131,7 @@
             </flexbox-item>
           </flexbox>
         </div>
-        <div class="customer_tools" v-if="$route.path === '/customer'">
+        <div class="customer_tools" v-if="$route.path === '/customer' || $route.path === '/historyOrders'">
           <flexbox :gutter="0" wrap="wrap">
             <flexbox-item>
               <p v-if="item.remarkType">备注：<span>{{item.remarkType|transformRemark}}{{item.remark | substring20}}</span></p>
@@ -144,13 +144,13 @@
             </flexbox-item>
           </flexbox>
         </div>
-        <div class="chargeback_box"  v-if="$route.path === '/customer' && item.status === 'REFUND_SUCCESS'">
+        <div class="chargeback_box"  v-if="($route.path === '/customer' || $route.path === '/historyOrders') && item.status === 'REFUND_SUCCESS'">
           <svg-icon icon-class="had_chargeback"></svg-icon>
         </div>
-        <div class="chargeback_box"  v-if="$route.path === '/customer' && item.status === 'REFUND_FAIL'">
+        <div class="chargeback_box"  v-if="($route.path === '/customer' || $route.path === '/historyOrders') && item.status === 'REFUND_FAIL'">
           <svg-icon icon-class="chargeback_fail"></svg-icon>
         </div>
-        <div class="chargeback_box"  v-if="$route.path === '/customer' && item.remarkType === 'COMPLETE'">
+        <div class="chargeback_box"  v-if="($route.path === '/customer' || $route.path === '/historyOrders') && item.remarkType === 'COMPLETE'">
           <svg-icon icon-class="finished"></svg-icon>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default {
       if (JSON.parse(status)) {
         if (this.login_status) {
           let isOrder = this.$route.path
-          if (isOrder !== '/customer') {
+          if (isOrder !== '/customer' && isOrder !== '/historyOrders') {
             this.statistics('抢单-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/orderDetails/${id}`})
           } else {
@@ -199,7 +199,7 @@ export default {
       } else {
         if (this.login_status) {
           let isOrder = this.$route.path
-          if (isOrder !== '/customer') {
+          if (isOrder !== '/customer' && isOrder !== '/historyOrders') {
             this.statistics('抢单-查看客单详情', {type: customerType === 'OPTIMIZATION' ? '优选' : '淘单', 客单ID: id})
             this.$router.push({path: `/orderDetails/${id}`})
           } else {
@@ -257,6 +257,18 @@ export default {
 .list_header{
   padding: 15px;
   background-color: #fff;
+  .sendIcon{
+    display: inline-block;
+    width: 20px;
+    img{
+      display: inline-block;
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      vertical-align: middle;
+      margin-top: -6px;
+    }
+  }
   .name_box{
     font-size: 16px;
     color: #333333;
@@ -330,9 +342,6 @@ export default {
               background:linear-gradient(90deg,#F9C755 0%,#F77925 100%);
               box-shadow:1px 1px 4px 0px #F9C755;/* no */
             }
-            &.noRebate{
-              background:linear-gradient(312deg,rgba(222,182,118,1) 0%,rgba(227,206,156,1) 100%);
-            }
           }
           .button{
             display: inline-block;
@@ -348,10 +357,6 @@ export default {
             background:linear-gradient(90deg,#59A3FF 0%,#347FFF 100%);
             box-shadow:1px 2px 10px 0px #95C3FF;/* no */
             border-radius:20px; /* no */
-            &.noRebate{
-              background:linear-gradient(322deg,rgba(107,127,175,1) 0%,rgba(163,184,234,1) 100%);
-              box-shadow:1px 2px 10px 0px rgba(163,184,234,1);/* no */
-            }
             em{
               text-decoration:line-through;
               font-style: normal;
